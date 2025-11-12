@@ -14,12 +14,15 @@ class CreateAppointmentScreen extends StatefulWidget {
 }
 
 class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
-  List<Hospital> _hospitals = [];
+  List<Hospital> _allHospitals = [];
+  List<Hospital> _filteredHospitals = [];
   List<Doctor> _allDoctors = [];
   List<Doctor> _filteredDoctors = [];
   List<Service> _services = [];
   List<Appointment> _existingAppointments = [];
   
+  String? _selectedCity;
+  String? _selectedDistrict;
   Hospital? _selectedHospital;
   Doctor? _selectedDoctor;
   Service? _selectedService;
@@ -43,12 +46,90 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
     final appointments = await JsonService.getAppointments();
 
     setState(() {
-      _hospitals = hospitals;
+      _allHospitals = hospitals;
       _allDoctors = doctors;
       _services = services;
       _existingAppointments = appointments;
       _isLoading = false;
     });
+  }
+
+  // Adres formatından il ve ilçe çıkar (format: "İlçe, İl")
+  Map<String, String> _parseAddress(String address) {
+    final parts = address.split(',').map((e) => e.trim()).toList();
+    if (parts.length >= 2) {
+      return {'district': parts[0], 'city': parts[1]};
+    }
+    return {'district': address, 'city': ''};
+  }
+
+  // Tüm illeri getir
+  List<String> get _cities {
+    final cities = <String>{};
+    for (var hospital in _allHospitals) {
+      final addressInfo = _parseAddress(hospital.address);
+      if (addressInfo['city']!.isNotEmpty) {
+        cities.add(addressInfo['city']!);
+      }
+    }
+    return cities.toList()..sort();
+  }
+
+  // Seçilen ile göre ilçeleri getir
+  List<String> get _districts {
+    if (_selectedCity == null) return [];
+    
+    final districts = <String>{};
+    for (var hospital in _allHospitals) {
+      final addressInfo = _parseAddress(hospital.address);
+      if (addressInfo['city'] == _selectedCity && addressInfo['district']!.isNotEmpty) {
+        districts.add(addressInfo['district']!);
+      }
+    }
+    return districts.toList()..sort();
+  }
+
+  void _onCitySelected(String? city) {
+    setState(() {
+      _selectedCity = city;
+      _selectedDistrict = null;
+      _selectedHospital = null;
+      _selectedDoctor = null;
+      _selectedDate = null;
+      _selectedTime = null;
+      _availableTimes = [];
+      _filteredHospitals = [];
+      _filteredDoctors = [];
+      
+      if (city != null) {
+        _updateFilteredHospitals();
+      }
+    });
+  }
+
+  void _onDistrictSelected(String? district) {
+    setState(() {
+      _selectedDistrict = district;
+      _selectedHospital = null;
+      _selectedDoctor = null;
+      _selectedDate = null;
+      _selectedTime = null;
+      _availableTimes = [];
+      _filteredDoctors = [];
+      
+      if (district != null) {
+        _updateFilteredHospitals();
+      }
+    });
+  }
+
+  void _updateFilteredHospitals() {
+    _filteredHospitals = _allHospitals.where((hospital) {
+      final addressInfo = _parseAddress(hospital.address);
+      final matchesCity = _selectedCity == null || addressInfo['city'] == _selectedCity;
+      final matchesDistrict = _selectedDistrict == null || addressInfo['district'] == _selectedDistrict;
+      return matchesCity && matchesDistrict;
+    }).toList();
   }
 
   void _onHospitalSelected(Hospital? hospital) {
@@ -214,7 +295,9 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
   }
 
   bool _isFormValid() {
-    return _selectedHospital != null &&
+    return _selectedCity != null &&
+        _selectedDistrict != null &&
+        _selectedHospital != null &&
         _selectedDoctor != null &&
         _selectedService != null &&
         _selectedDate != null &&
@@ -319,6 +402,37 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                // İl Seçimi
+                                Text(
+                                  'İl',
+                                  style: AppTheme.bodyMedium.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                _buildStringDropdown(
+                                  value: _selectedCity,
+                                  items: _cities,
+                                  onChanged: _onCitySelected,
+                                  hint: 'İl seçiniz',
+                                ),
+                                const SizedBox(height: 20),
+                                // İlçe Seçimi
+                                Text(
+                                  'İlçe',
+                                  style: AppTheme.bodyMedium.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                _buildStringDropdown(
+                                  value: _selectedDistrict,
+                                  items: _districts,
+                                  onChanged: _onDistrictSelected,
+                                  hint: 'İlçe seçiniz',
+                                  enabled: _selectedCity != null,
+                                ),
+                                const SizedBox(height: 20),
                                 // Hastane Seçimi
                                 Text(
                                   'Hastane',
@@ -329,9 +443,10 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                                 const SizedBox(height: 8),
                                 _buildDropdown<Hospital>(
                                   value: _selectedHospital,
-                                  items: _hospitals,
+                                  items: _filteredHospitals,
                                   onChanged: _onHospitalSelected,
                                   getLabel: (hospital) => hospital.name,
+                                  enabled: _selectedDistrict != null,
                                 ),
                                 const SizedBox(height: 20),
                                 // Doktor Seçimi
@@ -492,6 +607,46 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
     );
   }
 
+  Widget _buildStringDropdown({
+    required String? value,
+    required List<String> items,
+    required Function(String?) onChanged,
+    required String hint,
+    bool enabled = true,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.inputFieldGray,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: enabled ? AppTheme.dividerLight : AppTheme.iconGray.withOpacity(0.3),
+        ),
+      ),
+      child: DropdownButtonFormField<String>(
+        value: value,
+        items: items.map((item) {
+          return DropdownMenuItem<String>(
+            value: item,
+            child: Text(
+              item,
+              style: AppTheme.bodyMedium,
+            ),
+          );
+        }).toList(),
+        onChanged: enabled ? onChanged : null,
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          hintText: hint,
+          hintStyle: TextStyle(color: AppTheme.iconGray),
+        ),
+        style: AppTheme.bodyMedium,
+        dropdownColor: AppTheme.white,
+        icon: Icon(Icons.arrow_drop_down, color: enabled ? AppTheme.tealBlue : AppTheme.iconGray),
+      ),
+    );
+  }
+
   Widget _buildDropdown<T>({
     required T? value,
     required List<T> items,
@@ -527,7 +682,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
         ),
         style: AppTheme.bodyMedium,
         dropdownColor: AppTheme.white,
-        icon: Icon(Icons.arrow_drop_down, color: AppTheme.tealBlue),
+        icon: Icon(Icons.arrow_drop_down, color: enabled ? AppTheme.tealBlue : AppTheme.iconGray),
       ),
     );
   }
