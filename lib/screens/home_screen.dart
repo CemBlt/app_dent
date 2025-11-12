@@ -9,6 +9,7 @@ import 'create_appointment_screen.dart';
 import 'all_hospitals_screen.dart';
 import 'all_doctors_screen.dart';
 import 'search_screen.dart';
+import 'notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -219,7 +220,14 @@ class _HomeScreenState extends State<HomeScreen> {
             child: IconButton(
               icon: const Icon(Icons.notifications_outlined),
               color: AppTheme.tealBlue,
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationsScreen(),
+                  ),
+                );
+              },
             ),
           ),
         ],
