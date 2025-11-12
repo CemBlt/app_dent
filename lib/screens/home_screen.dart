@@ -8,6 +8,7 @@ import '../theme/app_theme.dart';
 import 'create_appointment_screen.dart';
 import 'all_hospitals_screen.dart';
 import 'all_doctors_screen.dart';
+import 'search_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,7 +18,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final TextEditingController _searchController = TextEditingController();
   List<Hospital> _hospitals = [];
   List<Doctor> _popularDoctors = [];
   List<Tip> _tips = [];
@@ -88,7 +88,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    _searchController.dispose();
     super.dispose();
   }
 
@@ -243,31 +242,37 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        child: TextField(
-          controller: _searchController,
-          decoration: InputDecoration(
-            hintText: 'Doktor veya klinik ara...',
-            hintStyle: TextStyle(color: AppTheme.iconGray),
-            prefixIcon: Icon(Icons.search, color: AppTheme.iconGray),
-            suffixIcon: _searchController.text.isNotEmpty
-                ? IconButton(
-                    icon: Icon(Icons.clear, color: AppTheme.iconGray),
-                    onPressed: () {
-                      setState(() {
-                        _searchController.clear();
-                      });
-                    },
-                  )
-                : null,
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 16,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SearchScreen(),
+                ),
+              );
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 16,
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.search, color: AppTheme.iconGray),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Doktor veya klinik ara...',
+                    style: AppTheme.bodyMedium.copyWith(
+                      color: AppTheme.iconGray,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          onChanged: (value) {
-            setState(() {});
-          },
         ),
       ),
     );
