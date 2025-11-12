@@ -1,0 +1,39 @@
+[
+  {
+    "id": "1",
+    "userId": "1",
+    "hospitalId": "1",
+    "doctorId": "1",
+    "date": "2024-02-15",
+    "time": "10:00",
+    "status": "pending",
+    "service": "1",
+    "notes": "Kontrol randevusu",
+    "createdAt": "2024-01-20T14:30:00Z"
+  },
+  {
+    "id": "2",
+    "userId": "1",
+    "hospitalId": "2",
+    "doctorId": "3",
+    "date": "2024-02-20",
+    "time": "14:00",
+    "status": "pending",
+    "service": "2",
+    "notes": "Kanal tedavisi",
+    "createdAt": "2024-01-21T10:15:00Z"
+  },
+  {
+    "id": "3",
+    "userId": "2",
+    "hospitalId": "1",
+    "doctorId": "2",
+    "date": "2024-01-25",
+    "time": "11:00",
+    "status": "completed",
+    "service": "3",
+    "notes": "Protez kontrolü",
+    "createdAt": "2024-01-10T09:00:00Z"
+  }
+]
+
