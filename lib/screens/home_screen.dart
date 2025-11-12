@@ -7,6 +7,7 @@ import '../services/json_service.dart';
 import '../theme/app_theme.dart';
 import 'create_appointment_screen.dart';
 import 'all_hospitals_screen.dart';
+import 'all_doctors_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -74,6 +75,15 @@ class _HomeScreenState extends State<HomeScreen> {
   String _getDistance(Hospital hospital) {
     final distance = _getDistanceValue(hospital);
     return '${distance.toStringAsFixed(1)} km';
+  }
+
+  // Doktorun çalıştığı hastaneyi getir
+  Hospital? _getHospitalByDoctor(Doctor doctor) {
+    try {
+      return _hospitals.firstWhere((h) => h.id == doctor.hospitalId);
+    } catch (e) {
+      return null;
+    }
   }
 
   @override
@@ -375,7 +385,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AllDoctorsScreen(),
+                    ),
+                  );
+                },
                 child: Text(
                   'Tümünü Gör',
                   style: AppTheme.bodyMedium.copyWith(
@@ -405,6 +422,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildDoctorCard(Doctor doctor) {
+    final hospital = _getHospitalByDoctor(doctor);
+    
     return Container(
       width: 280,
       margin: const EdgeInsets.only(right: 16),
@@ -459,14 +478,37 @@ class _HomeScreenState extends State<HomeScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   Text(
                     doctor.specialty,
                     style: AppTheme.bodySmall,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 6),
+                  if (hospital != null) ...[
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.local_hospital,
+                          size: 12,
+                          color: AppTheme.iconGray,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            hospital.name,
+                            style: AppTheme.bodySmall.copyWith(
+                              color: AppTheme.grayText,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 4),
                   Row(
                     children: [
                       Icon(Icons.star, size: 14, color: AppTheme.accentYellow),
