@@ -6,6 +6,7 @@ import '../models/tip.dart';
 import '../services/json_service.dart';
 import '../theme/app_theme.dart';
 import 'create_appointment_screen.dart';
+import 'all_hospitals_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -507,7 +508,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AllHospitalsScreen(),
+                    ),
+                  );
+                },
                 child: Text(
                   'Tümünü Gör',
                   style: AppTheme.bodyMedium.copyWith(
