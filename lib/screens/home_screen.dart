@@ -5,6 +5,7 @@ import '../models/hospital.dart';
 import '../models/tip.dart';
 import '../services/json_service.dart';
 import '../theme/app_theme.dart';
+import 'create_appointment_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -285,7 +286,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () {
-                    // Randevu oluştur sayfasına yönlendirme
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CreateAppointmentScreen(),
+                      ),
+                    );
                   },
                   borderRadius: BorderRadius.circular(16),
                   child: Padding(
