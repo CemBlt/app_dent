@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import '../models/hospital.dart';
 import '../models/doctor.dart';
 import '../models/tip.dart';
+import '../models/appointment.dart';
+import '../models/service.dart';
 
 class JsonService {
   // Hastaneleri getir
@@ -64,5 +66,48 @@ class JsonService {
           hospital.address.toLowerCase().contains(lowerQuery);
     }).toList();
   }
+
+  // Randevuları getir
+  static Future<List<Appointment>> getAppointments() async {
+    try {
+      final String response =
+          await rootBundle.loadString('assets/data/appointments.json');
+      final List<dynamic> data = json.decode(response);
+      return data.map((json) => Appointment.fromJson(json)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // Kullanıcının randevularını getir
+  static Future<List<Appointment>> getUserAppointments(String userId) async {
+    final allAppointments = await getAppointments();
+    return allAppointments
+        .where((appointment) => appointment.userId == userId)
+        .toList();
+  }
+
+  // Hizmetleri getir
+  static Future<List<Service>> getServices() async {
+    try {
+      final String response =
+          await rootBundle.loadString('assets/data/services.json');
+      final List<dynamic> data = json.decode(response);
+      return data.map((json) => Service.fromJson(json)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // Hizmet getir
+  static Future<Service?> getService(String serviceId) async {
+    final allServices = await getServices();
+    try {
+      return allServices.firstWhere((service) => service.id == serviceId);
+    } catch (e) {
+      return null;
+    }
+  }
 }
+
 

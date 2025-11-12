@@ -34,6 +34,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final doctors = await JsonService.getPopularDoctors();
     final tips = await JsonService.getTips();
 
+    // Hastaneleri uzaklığa göre sırala (en yakından uzağa)
+    hospitals.sort((a, b) {
+      final distanceA = _getDistanceValue(a);
+      final distanceB = _getDistanceValue(b);
+      return distanceA.compareTo(distanceB);
+    });
+
     setState(() {
       _hospitals = hospitals;
       _popularDoctors = doctors;
@@ -52,6 +59,19 @@ class _HomeScreenState extends State<HomeScreen> {
         _startTipCarousel();
       }
     });
+  }
+
+  // Uzaklık değerini sayısal olarak döndür
+  double _getDistanceValue(Hospital hospital) {
+    // Gerçek konum bilgisi olmadığı için hastane ID'sine göre sabit değer
+    final distances = {'1': 1.2, '2': 0.8, '3': 2.5};
+    return distances[hospital.id] ?? 1.6;
+  }
+
+  // Uzaklık hesaplama (string formatında)
+  String _getDistance(Hospital hospital) {
+    final distance = _getDistanceValue(hospital);
+    return '${distance.toStringAsFixed(1)} km';
   }
 
   @override
@@ -605,12 +625,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(width: 12),
                           Icon(
-                            Icons.access_time,
+                            Icons.location_on,
                             size: 14,
                             color: AppTheme.iconGray,
                           ),
                           const SizedBox(width: 4),
-                          Text('09:00 - 18:00', style: AppTheme.bodySmall),
+                          Text(
+                            _getDistance(hospital),
+                            style: AppTheme.bodySmall,
+                          ),
                         ],
                       ),
                     ],
