@@ -5,6 +5,7 @@ import '../models/doctor.dart';
 import '../models/tip.dart';
 import '../models/appointment.dart';
 import '../models/service.dart';
+import '../models/user.dart';
 
 class JsonService {
   // Hastaneleri getir
@@ -104,6 +105,28 @@ class JsonService {
     final allServices = await getServices();
     try {
       return allServices.firstWhere((service) => service.id == serviceId);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Kullanıcıları getir
+  static Future<List<User>> getUsers() async {
+    try {
+      final String response =
+          await rootBundle.loadString('assets/data/users.json');
+      final List<dynamic> data = json.decode(response);
+      return data.map((json) => User.fromJson(json)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // Kullanıcı getir
+  static Future<User?> getUser(String userId) async {
+    final allUsers = await getUsers();
+    try {
+      return allUsers.firstWhere((user) => user.id == userId);
     } catch (e) {
       return null;
     }

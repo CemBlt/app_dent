@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'home_screen.dart';
 import 'appointments_screen.dart';
-// Profil sayfası daha sonra eklenecek
-// import 'profile_screen.dart';
+import 'profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -18,9 +17,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const AppointmentsScreen(),
-    // Profil sayfası daha sonra eklenecek
-    // const ProfileScreen(),
-    const Center(child: Text('Profil')),
+    const ProfileScreen(),
   ];
 
   @override
