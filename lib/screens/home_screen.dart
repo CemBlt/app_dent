@@ -5,14 +5,14 @@ import '../models/hospital.dart';
 import '../models/tip.dart';
 import '../services/json_service.dart';
 import '../theme/app_theme.dart';
-import 'create_appointment_screen.dart';
-import 'all_hospitals_screen.dart';
 import 'all_doctors_screen.dart';
-import 'search_screen.dart';
-import 'notifications_screen.dart';
-import 'hospital_detail_screen.dart';
+import 'all_hospitals_screen.dart';
+import 'create_appointment_screen.dart';
 import 'doctor_detail_screen.dart';
 import 'filter_hospitals_screen.dart';
+import 'hospital_detail_screen.dart';
+import 'notifications_screen.dart';
+import 'search_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -259,17 +259,12 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const SearchScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const SearchScreen()),
               );
             },
             borderRadius: BorderRadius.circular(16),
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 16,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Row(
                 children: [
                   Icon(Icons.search, color: AppTheme.iconGray),
@@ -295,6 +290,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         children: [
           Expanded(
+            flex: 2,
             child: Container(
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
@@ -322,19 +318,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   borderRadius: BorderRadius.circular(16),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Icon(
                           Icons.add_circle_outline,
                           color: AppTheme.white,
+                          size: 20,
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 8),
                         Text(
                           'Randevu Oluştur',
-                          style: AppTheme.headingSmall.copyWith(
+                          style: AppTheme.bodyMedium.copyWith(
                             color: AppTheme.white,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
@@ -345,37 +343,52 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(width: 12),
-          Container(
-            width: 60,
-            decoration: BoxDecoration(
-              color: AppTheme.lightTurquoise,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const FilterHospitalsScreen(),
-                    ),
-                  );
-                },
+          Expanded(
+            flex: 2,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppTheme.lightTurquoise,
                 borderRadius: BorderRadius.circular(16),
-                child: const Padding(
-                  padding: EdgeInsets.all(18),
-                  child: Icon(
-                    Icons.filter_list,
-                    color: AppTheme.tealBlue,
-                    size: 24,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const FilterHospitalsScreen(),
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.filter_list,
+                          color: AppTheme.tealBlue,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Hastane Filtrele',
+                          style: AppTheme.bodyMedium.copyWith(
+                            color: AppTheme.tealBlue,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -444,7 +457,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildDoctorCard(Doctor doctor) {
     final hospital = _getHospitalByDoctor(doctor);
-    
+
     return Container(
       width: 280,
       margin: const EdgeInsets.only(right: 16),
@@ -466,9 +479,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => DoctorDetailScreen(
-                  doctor: doctor,
-                ),
+                builder: (context) => DoctorDetailScreen(doctor: doctor),
               ),
             );
           },
@@ -494,7 +505,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             width: 70,
                             height: 70,
                             errorBuilder: (context, error, stackTrace) {
-                              return Icon(Icons.person, size: 35, color: AppTheme.tealBlue);
+                              return Icon(
+                                Icons.person,
+                                size: 35,
+                                color: AppTheme.tealBlue,
+                              );
                             },
                           ),
                         )
@@ -549,7 +564,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(Icons.star, size: 14, color: AppTheme.accentYellow),
+                          Icon(
+                            Icons.star,
+                            size: 14,
+                            color: AppTheme.accentYellow,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             '4.8',
@@ -645,9 +664,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => HospitalDetailScreen(
-                  hospital: hospital,
-                ),
+                builder: (context) => HospitalDetailScreen(hospital: hospital),
               ),
             );
           },
