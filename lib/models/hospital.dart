@@ -8,6 +8,7 @@ class Hospital {
   final String email;
   final String description;
   final String? image;
+  final List<String>? gallery; // Maksimum 5 fotoğraf
   final List<String> services;
   final Map<String, dynamic> workingHours;
   final String createdAt;
@@ -22,6 +23,7 @@ class Hospital {
     required this.email,
     required this.description,
     this.image,
+    this.gallery,
     required this.services,
     required this.workingHours,
     required this.createdAt,
@@ -38,6 +40,9 @@ class Hospital {
       email: json['email'] as String,
       description: json['description'] as String,
       image: json['image'] as String?,
+      gallery: json['gallery'] != null
+          ? List<String>.from(json['gallery'] as List)
+          : null,
       services: List<String>.from(json['services'] as List),
       workingHours: json['workingHours'] as Map<String, dynamic>,
       createdAt: json['createdAt'] as String,
@@ -55,6 +60,7 @@ class Hospital {
       'email': email,
       'description': description,
       'image': image,
+      'gallery': gallery,
       'services': services,
       'workingHours': workingHours,
       'createdAt': createdAt,

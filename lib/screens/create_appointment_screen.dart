@@ -7,7 +7,12 @@ import '../models/appointment.dart';
 import '../services/json_service.dart';
 
 class CreateAppointmentScreen extends StatefulWidget {
-  const CreateAppointmentScreen({super.key});
+  final String? preselectedHospitalId;
+  
+  const CreateAppointmentScreen({
+    super.key,
+    this.preselectedHospitalId,
+  });
 
   @override
   State<CreateAppointmentScreen> createState() => _CreateAppointmentScreenState();
@@ -50,6 +55,25 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
       _allDoctors = doctors;
       _services = services;
       _existingAppointments = appointments;
+      
+      // Eğer preselectedHospitalId varsa, hastaneyi seç
+      if (widget.preselectedHospitalId != null) {
+        try {
+          final preselectedHospital = hospitals.firstWhere(
+            (h) => h.id == widget.preselectedHospitalId,
+          );
+          // İl ve ilçe bilgilerini ayarla
+          final addressInfo = _parseAddress(preselectedHospital.address);
+          _selectedCity = addressInfo['city'];
+          _selectedDistrict = addressInfo['district'];
+          _selectedHospital = preselectedHospital;
+          _updateFilteredHospitals();
+          _onHospitalSelected(preselectedHospital);
+        } catch (e) {
+          // Hastane bulunamadı
+        }
+      }
+      
       _isLoading = false;
     });
   }

@@ -10,6 +10,7 @@ import 'all_hospitals_screen.dart';
 import 'all_doctors_screen.dart';
 import 'search_screen.dart';
 import 'notifications_screen.dart';
+import 'hospital_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -615,7 +616,14 @@ class _HomeScreenState extends State<HomeScreen> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            // Hastane detay sayfasına yönlendirme
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HospitalDetailScreen(
+                  hospital: hospital,
+                ),
+              ),
+            );
           },
           borderRadius: BorderRadius.circular(16),
           child: Padding(

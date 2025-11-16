@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../models/hospital.dart';
 import '../services/json_service.dart';
+import 'hospital_detail_screen.dart';
 
 class AllHospitalsScreen extends StatefulWidget {
   const AllHospitalsScreen({super.key});
@@ -373,7 +374,14 @@ class _AllHospitalsScreenState extends State<AllHospitalsScreen> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            // Hastane detay sayfasına yönlendirme
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HospitalDetailScreen(
+                  hospital: hospital,
+                ),
+              ),
+            );
           },
           borderRadius: BorderRadius.circular(16),
           child: Padding(
