@@ -12,6 +12,7 @@ import 'search_screen.dart';
 import 'notifications_screen.dart';
 import 'hospital_detail_screen.dart';
 import 'doctor_detail_screen.dart';
+import 'filter_hospitals_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -361,13 +362,18 @@ class _HomeScreenState extends State<HomeScreen> {
               color: Colors.transparent,
               child: InkWell(
                 onTap: () {
-                  // Randevularım sayfasına yönlendirme
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FilterHospitalsScreen(),
+                    ),
+                  );
                 },
                 borderRadius: BorderRadius.circular(16),
                 child: const Padding(
                   padding: EdgeInsets.all(18),
                   child: Icon(
-                    Icons.check_circle_outline,
+                    Icons.filter_list,
                     color: AppTheme.tealBlue,
                     size: 24,
                   ),
