@@ -3,6 +3,7 @@ import '../theme/app_theme.dart';
 import '../models/doctor.dart';
 import '../models/hospital.dart';
 import '../services/json_service.dart';
+import 'doctor_detail_screen.dart';
 
 class AllDoctorsScreen extends StatefulWidget {
   const AllDoctorsScreen({super.key});
@@ -360,7 +361,14 @@ class _AllDoctorsScreenState extends State<AllDoctorsScreen> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            // Doktor detay sayfasına yönlendirme
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DoctorDetailScreen(
+                  doctor: doctor,
+                ),
+              ),
+            );
           },
           borderRadius: BorderRadius.circular(16),
           child: Padding(

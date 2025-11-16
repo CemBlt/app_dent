@@ -185,6 +185,35 @@ class JsonService {
     );
     return total / ratings.length;
   }
+
+  // Belirli bir doktorun yorumlarını getir
+  static Future<List<Review>> getReviewsByDoctor(String doctorId) async {
+    final allReviews = await getReviews();
+    return allReviews
+        .where((review) => review.doctorId == doctorId)
+        .toList();
+  }
+
+  // Belirli bir doktorun puanlamalarını getir
+  static Future<List<Rating>> getRatingsByDoctor(String doctorId) async {
+    final allRatings = await getRatings();
+    return allRatings
+        .where((rating) => rating.doctorId == doctorId)
+        .toList();
+  }
+
+  // Doktor ortalama puanını hesapla
+  static Future<double> getDoctorAverageRating(String doctorId) async {
+    final ratings = await getRatingsByDoctor(doctorId);
+    final validRatings = ratings.where((r) => r.doctorRating != null).toList();
+    if (validRatings.isEmpty) return 0.0;
+    
+    final total = validRatings.fold<int>(
+      0,
+      (sum, rating) => sum + (rating.doctorRating ?? 0),
+    );
+    return total / validRatings.length;
+  }
 }
 
 

@@ -11,6 +11,7 @@ import 'all_doctors_screen.dart';
 import 'search_screen.dart';
 import 'notifications_screen.dart';
 import 'hospital_detail_screen.dart';
+import 'doctor_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -452,96 +453,112 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Doktor Fotoğrafı - Sol yukarıda circle
-            Container(
-              width: 70,
-              height: 70,
-              decoration: BoxDecoration(
-                color: AppTheme.mediumTurquoise,
-                shape: BoxShape.circle,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DoctorDetailScreen(
+                  doctor: doctor,
+                ),
               ),
-              child: doctor.image != null
-                  ? ClipOval(
-                      child: Image.asset(
-                        doctor.image!,
-                        fit: BoxFit.cover,
-                        width: 70,
-                        height: 70,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Icon(Icons.person, size: 35, color: AppTheme.tealBlue);
-                        },
-                      ),
-                    )
-                  : Icon(Icons.person, size: 35, color: AppTheme.tealBlue),
-            ),
-            const SizedBox(width: 16),
-            // Doktor Bilgileri
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    doctor.fullName,
-                    style: AppTheme.bodyMedium.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.darkText,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+            );
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Doktor Fotoğrafı - Sol yukarıda circle
+                Container(
+                  width: 70,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    color: AppTheme.mediumTurquoise,
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    doctor.specialty,
-                    style: AppTheme.bodySmall,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (hospital != null) ...[
-                    const SizedBox(height: 3),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.local_hospital,
-                          size: 12,
-                          color: AppTheme.iconGray,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            hospital.name,
-                            style: AppTheme.bodySmall.copyWith(
-                              color: AppTheme.grayText,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                  child: doctor.image != null
+                      ? ClipOval(
+                          child: Image.asset(
+                            doctor.image!,
+                            fit: BoxFit.cover,
+                            width: 70,
+                            height: 70,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(Icons.person, size: 35, color: AppTheme.tealBlue);
+                            },
                           ),
+                        )
+                      : Icon(Icons.person, size: 35, color: AppTheme.tealBlue),
+                ),
+                const SizedBox(width: 16),
+                // Doktor Bilgileri
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        doctor.fullName,
+                        style: AppTheme.bodyMedium.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.darkText,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        doctor.specialty,
+                        style: AppTheme.bodySmall,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (hospital != null) ...[
+                        const SizedBox(height: 3),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.local_hospital,
+                              size: 12,
+                              color: AppTheme.iconGray,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                hospital.name,
+                                style: AppTheme.bodySmall.copyWith(
+                                  color: AppTheme.grayText,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
-                    ),
-                  ],
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(Icons.star, size: 14, color: AppTheme.accentYellow),
-                      const SizedBox(width: 4),
-                      Text(
-                        '4.8',
-                        style: AppTheme.bodySmall.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.star, size: 14, color: AppTheme.accentYellow),
+                          const SizedBox(width: 4),
+                          Text(
+                            '4.8',
+                            style: AppTheme.bodySmall.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

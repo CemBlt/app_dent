@@ -4,6 +4,7 @@ import '../models/doctor.dart';
 import '../models/hospital.dart';
 import '../services/json_service.dart';
 import 'hospital_detail_screen.dart';
+import 'doctor_detail_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -275,7 +276,14 @@ class _SearchScreenState extends State<SearchScreen> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            // Doktor detay sayfasına yönlendirme
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DoctorDetailScreen(
+                  doctor: doctor,
+                ),
+              ),
+            );
           },
           borderRadius: BorderRadius.circular(16),
           child: Padding(
