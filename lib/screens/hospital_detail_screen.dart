@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../models/hospital.dart';
 import '../models/doctor.dart';
 import '../models/service.dart';
+import '../models/review.dart';
+import '../models/rating.dart';
+import '../models/user.dart';
 import '../services/json_service.dart';
 import '../theme/app_theme.dart';
 import 'create_appointment_screen.dart';
@@ -21,6 +24,9 @@ class HospitalDetailScreen extends StatefulWidget {
 class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
   List<Doctor> _doctors = [];
   List<Service> _services = [];
+  List<Review> _reviews = [];
+  List<Rating> _ratings = [];
+  double _averageRating = 0.0;
   bool _isLoading = true;
   int _currentImageIndex = 0;
   PageController? _pageController;
@@ -49,9 +55,17 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
       return widget.hospital.services.contains(service.id);
     }).toList();
 
+    // Yorumları ve puanlamaları yükle
+    final reviews = await JsonService.getReviewsByHospital(widget.hospital.id);
+    final ratings = await JsonService.getRatingsByHospital(widget.hospital.id);
+    final averageRating = await JsonService.getHospitalAverageRating(widget.hospital.id);
+
     setState(() {
       _doctors = doctors;
       _services = hospitalServices;
+      _reviews = reviews;
+      _ratings = ratings;
+      _averageRating = averageRating;
       _isLoading = false;
     });
   }
@@ -176,6 +190,9 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                               _buildDoctorsSection(),
                               const SizedBox(height: 24),
                             ],
+                            // Yorumlar ve Puanlar
+                            _buildReviewsSection(),
+                            const SizedBox(height: 24),
                             // Randevu Oluştur Butonu
                             _buildAppointmentButton(),
                             const SizedBox(height: 20),
@@ -653,6 +670,270 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
     );
   }
 
+  Widget _buildReviewsSection() {
+    // Son 2 yorumu al (tarihe göre sıralı)
+    final sortedReviews = List<Review>.from(_reviews);
+    sortedReviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final displayedReviews = sortedReviews.take(2).toList();
+    final hasMoreReviews = _reviews.length > 2;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Yorumlar',
+                style: AppTheme.headingSmall,
+              ),
+              if (_averageRating > 0)
+                Row(
+                  children: [
+                    Icon(
+                      Icons.star,
+                      color: AppTheme.accentYellow,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _averageRating.toStringAsFixed(1),
+                      style: AppTheme.bodyMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.darkText,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '(${_reviews.length})',
+                      style: AppTheme.bodySmall.copyWith(
+                        color: AppTheme.grayText,
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (_reviews.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.comment_outlined,
+                      size: 48,
+                      color: AppTheme.iconGray,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Henüz yorum yapılmamış',
+                      style: AppTheme.bodyMedium.copyWith(
+                        color: AppTheme.grayText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else ...[
+            ...displayedReviews.map((review) {
+              final rating = _ratings.firstWhere(
+                (r) => r.appointmentId == review.appointmentId,
+                orElse: () => Rating(
+                  id: '',
+                  userId: review.userId,
+                  hospitalId: review.hospitalId,
+                  appointmentId: review.appointmentId,
+                  hospitalRating: 0,
+                  createdAt: review.createdAt,
+                ),
+              );
+              return _buildReviewCard(review, rating);
+            }),
+            if (hasMoreReviews) ...[
+              const SizedBox(height: 12),
+              Center(
+                child: TextButton(
+                  onPressed: () => _showAllReviewsDialog(),
+                  child: Text(
+                    'Tümünü Gör',
+                    style: AppTheme.bodyMedium.copyWith(
+                      color: AppTheme.tealBlue,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _showAllReviewsDialog() {
+    // Tarihe göre sıralı yorumlar
+    final sortedReviews = List<Review>.from(_reviews);
+    sortedReviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    showDialog(
+      context: context,
+      builder: (context) => _AllReviewsDialog(
+        reviews: sortedReviews,
+        ratings: _ratings,
+        averageRating: _averageRating,
+        totalCount: _reviews.length,
+      ),
+    );
+  }
+
+  Widget _buildReviewCard(Review review, Rating rating) {
+    return FutureBuilder<User?>(
+      future: JsonService.getUser(review.userId),
+      builder: (context, snapshot) {
+        final user = snapshot.data;
+        final userName = user != null
+            ? '${user.name} ${user.surname}'
+            : 'Kullanıcı';
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.backgroundLight,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppTheme.dividerLight,
+              width: 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  // Kullanıcı Avatar
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppTheme.mediumTurquoise,
+                    ),
+                    child: user?.profileImage != null
+                        ? ClipOval(
+                            child: Image.asset(
+                              user!.profileImage!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.person,
+                                  size: 20,
+                                  color: AppTheme.white,
+                                );
+                              },
+                            ),
+                          )
+                        : Icon(
+                            Icons.person,
+                            size: 20,
+                            color: AppTheme.white,
+                          ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Kullanıcı Adı ve Puan
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          userName,
+                          style: AppTheme.bodyMedium.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if (rating.hospitalRating > 0)
+                          Row(
+                            children: List.generate(
+                              5,
+                              (index) => Icon(
+                                index < rating.hospitalRating
+                                    ? Icons.star
+                                    : Icons.star_border,
+                                size: 14,
+                                color: AppTheme.accentYellow,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  // Tarih
+                  Text(
+                    _formatDate(review.createdAt),
+                    style: AppTheme.bodySmall.copyWith(
+                      color: AppTheme.iconGray,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // Yorum Metni
+              Text(
+                review.comment,
+                style: AppTheme.bodyMedium.copyWith(
+                  color: AppTheme.darkText,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  String _formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      final now = DateTime.now();
+      final difference = now.difference(date);
+
+      if (difference.inDays == 0) {
+        return 'Bugün';
+      } else if (difference.inDays == 1) {
+        return 'Dün';
+      } else if (difference.inDays < 7) {
+        return '${difference.inDays} gün önce';
+      } else if (difference.inDays < 30) {
+        final weeks = (difference.inDays / 7).floor();
+        return '$weeks hafta önce';
+      } else if (difference.inDays < 365) {
+        final months = (difference.inDays / 30).floor();
+        return '$months ay önce';
+      } else {
+        final years = (difference.inDays / 365).floor();
+        return '$years yıl önce';
+      }
+    } catch (e) {
+      return dateString;
+    }
+  }
+
   Widget _buildAppointmentButton() {
     return SizedBox(
       width: double.infinity,
@@ -679,6 +960,325 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
             color: AppTheme.white,
             fontWeight: FontWeight.bold,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// Tüm Yorumlar Dialog Widget'ı
+class _AllReviewsDialog extends StatefulWidget {
+  final List<Review> reviews;
+  final List<Rating> ratings;
+  final double averageRating;
+  final int totalCount;
+
+  const _AllReviewsDialog({
+    required this.reviews,
+    required this.ratings,
+    required this.averageRating,
+    required this.totalCount,
+  });
+
+  @override
+  State<_AllReviewsDialog> createState() => _AllReviewsDialogState();
+}
+
+class _AllReviewsDialogState extends State<_AllReviewsDialog> {
+  final ScrollController _scrollController = ScrollController();
+  int _displayedCount = 5; // İlk 5 yorum gösterilecek
+  final int _loadMoreCount = 5; // Her seferinde 5 yorum daha yüklenecek
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    // Scroll pozisyonu %80'e ulaştığında daha fazla yorum yükle
+    if (!_scrollController.hasClients) return;
+    
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    
+    if (currentScroll >= maxScroll * 0.8) {
+      if (_displayedCount < widget.reviews.length) {
+        setState(() {
+          _displayedCount = (_displayedCount + _loadMoreCount)
+              .clamp(0, widget.reviews.length);
+        });
+      }
+    }
+  }
+
+  String _formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      final now = DateTime.now();
+      final difference = now.difference(date);
+
+      if (difference.inDays == 0) {
+        return 'Bugün';
+      } else if (difference.inDays == 1) {
+        return 'Dün';
+      } else if (difference.inDays < 7) {
+        return '${difference.inDays} gün önce';
+      } else if (difference.inDays < 30) {
+        final weeks = (difference.inDays / 7).floor();
+        return '$weeks hafta önce';
+      } else if (difference.inDays < 365) {
+        final months = (difference.inDays / 30).floor();
+        return '$months ay önce';
+      } else {
+        final years = (difference.inDays / 365).floor();
+        return '$years yıl önce';
+      }
+    } catch (e) {
+      return dateString;
+    }
+  }
+
+  Widget _buildReviewCard(Review review, Rating rating) {
+    return FutureBuilder<User?>(
+      future: JsonService.getUser(review.userId),
+      builder: (context, snapshot) {
+        final user = snapshot.data;
+        final userName = user != null
+            ? '${user.name} ${user.surname}'
+            : 'Kullanıcı';
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.backgroundLight,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppTheme.dividerLight,
+              width: 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  // Kullanıcı Avatar
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppTheme.mediumTurquoise,
+                    ),
+                    child: user?.profileImage != null
+                        ? ClipOval(
+                            child: Image.asset(
+                              user!.profileImage!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.person,
+                                  size: 20,
+                                  color: AppTheme.white,
+                                );
+                              },
+                            ),
+                          )
+                        : Icon(
+                            Icons.person,
+                            size: 20,
+                            color: AppTheme.white,
+                          ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Kullanıcı Adı ve Puan
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          userName,
+                          style: AppTheme.bodyMedium.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if (rating.hospitalRating > 0)
+                          Row(
+                            children: List.generate(
+                              5,
+                              (index) => Icon(
+                                index < rating.hospitalRating
+                                    ? Icons.star
+                                    : Icons.star_border,
+                                size: 14,
+                                color: AppTheme.accentYellow,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  // Tarih
+                  Text(
+                    _formatDate(review.createdAt),
+                    style: AppTheme.bodySmall.copyWith(
+                      color: AppTheme.iconGray,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // Yorum Metni
+              Text(
+                review.comment,
+                style: AppTheme.bodyMedium.copyWith(
+                  color: AppTheme.darkText,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final displayedReviews = widget.reviews.take(_displayedCount).toList();
+    final hasMore = _displayedCount < widget.reviews.length;
+
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.8,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppTheme.lightTurquoise,
+                    AppTheme.mediumTurquoise,
+                  ],
+                ),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Tüm Yorumlar',
+                          style: AppTheme.headingMedium.copyWith(
+                            color: AppTheme.white,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        if (widget.averageRating > 0)
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.star,
+                                color: AppTheme.accentYellow,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${widget.averageRating.toStringAsFixed(1)} (${widget.totalCount} yorum)',
+                                style: AppTheme.bodySmall.copyWith(
+                                  color: AppTheme.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: AppTheme.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            // Yorumlar Listesi
+            Flexible(
+              child: displayedReviews.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(40),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.comment_outlined,
+                              size: 48,
+                              color: AppTheme.iconGray,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Henüz yorum yapılmamış',
+                              style: AppTheme.bodyMedium.copyWith(
+                                color: AppTheme.grayText,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.all(20),
+                      itemCount: displayedReviews.length + (hasMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == displayedReviews.length) {
+                          // Loading indicator
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(16),
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        }
+
+                        final review = displayedReviews[index];
+                        final rating = widget.ratings.firstWhere(
+                          (r) => r.appointmentId == review.appointmentId,
+                          orElse: () => Rating(
+                            id: '',
+                            userId: review.userId,
+                            hospitalId: review.hospitalId,
+                            appointmentId: review.appointmentId,
+                            hospitalRating: 0,
+                            createdAt: review.createdAt,
+                          ),
+                        );
+                        return _buildReviewCard(review, rating);
+                      },
+                    ),
+            ),
+          ],
         ),
       ),
     );

@@ -93,6 +93,25 @@
       "sunday": {"start": null, "end": null, "isAvailable": false}
     },
     "createdAt": "2024-01-03T10:30:00Z"
+  },
+  {
+    "id": "6",
+    "hospitalId": "3",
+    "name": "Dr. Seda",
+    "surname": "Çelik",
+    "specialty": "Estetik Diş Hekimliği",
+    "image": null,
+    "bio": "İmplant ve estetik uygulamalar uzmanı",
+    "workingHours": {
+      "monday": {"start": "10:00", "end": "20:00", "isAvailable": true},
+      "tuesday": {"start": "10:00", "end": "20:00", "isAvailable": true},
+      "wednesday": {"start": "10:00", "end": "20:00", "isAvailable": true},
+      "thursday": {"start": "10:00", "end": "20:00", "isAvailable": true},
+      "friday": {"start": "10:00", "end": "20:00", "isAvailable": true},
+      "saturday": {"start": "10:00", "end": "18:00", "isAvailable": true},
+      "sunday": {"start": null, "end": null, "isAvailable": false}
+    },
+    "createdAt": "2024-01-03T11:00:00Z"
   }
 ]
 

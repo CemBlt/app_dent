@@ -6,6 +6,8 @@ import '../models/tip.dart';
 import '../models/appointment.dart';
 import '../models/service.dart';
 import '../models/user.dart';
+import '../models/review.dart';
+import '../models/rating.dart';
 
 class JsonService {
   // Hastaneleri getir
@@ -130,6 +132,58 @@ class JsonService {
     } catch (e) {
       return null;
     }
+  }
+
+  // Yorumları getir
+  static Future<List<Review>> getReviews() async {
+    try {
+      final String response =
+          await rootBundle.loadString('assets/data/reviews.json');
+      final List<dynamic> data = json.decode(response);
+      return data.map((json) => Review.fromJson(json)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // Belirli bir hastanenin yorumlarını getir
+  static Future<List<Review>> getReviewsByHospital(String hospitalId) async {
+    final allReviews = await getReviews();
+    return allReviews
+        .where((review) => review.hospitalId == hospitalId)
+        .toList();
+  }
+
+  // Puanlamaları getir
+  static Future<List<Rating>> getRatings() async {
+    try {
+      final String response =
+          await rootBundle.loadString('assets/data/ratings.json');
+      final List<dynamic> data = json.decode(response);
+      return data.map((json) => Rating.fromJson(json)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // Belirli bir hastanenin puanlamalarını getir
+  static Future<List<Rating>> getRatingsByHospital(String hospitalId) async {
+    final allRatings = await getRatings();
+    return allRatings
+        .where((rating) => rating.hospitalId == hospitalId)
+        .toList();
+  }
+
+  // Hastane ortalama puanını hesapla
+  static Future<double> getHospitalAverageRating(String hospitalId) async {
+    final ratings = await getRatingsByHospital(hospitalId);
+    if (ratings.isEmpty) return 0.0;
+    
+    final total = ratings.fold<int>(
+      0,
+      (sum, rating) => sum + rating.hospitalRating,
+    );
+    return total / ratings.length;
   }
 }
 
