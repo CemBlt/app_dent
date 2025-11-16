@@ -399,9 +399,16 @@ class _AllHospitalsScreenState extends State<AllHospitalsScreen> {
                   child: hospital.image != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
+                          child: Image.asset(
                             hospital.image!,
                             fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.local_hospital,
+                                size: 40,
+                                color: AppTheme.tealBlue,
+                              );
+                            },
                           ),
                         )
                       : Icon(

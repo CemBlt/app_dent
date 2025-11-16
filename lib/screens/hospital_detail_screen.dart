@@ -117,21 +117,35 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                             color: AppTheme.white,
                           ),
                         ),
-                        background: galleryImages.isNotEmpty
-                            ? _buildImageCarousel(galleryImages)
-                            : widget.hospital.image != null
-                                ? Image.asset(
-                                    widget.hospital.image!,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Container(
-                                    color: AppTheme.lightTurquoise,
-                                    child: const Icon(
-                                      Icons.local_hospital,
-                                      size: 80,
-                                      color: AppTheme.white,
-                                    ),
-                                  ),
+                        background: widget.hospital.image != null
+                            ? GestureDetector(
+                                onTap: () => _showFullScreenImage(
+                                  context,
+                                  widget.hospital.image!,
+                                ),
+                                child: Image.asset(
+                                  widget.hospital.image!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: AppTheme.lightTurquoise,
+                                      child: const Icon(
+                                        Icons.local_hospital,
+                                        size: 80,
+                                        color: AppTheme.white,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              )
+                            : Container(
+                                color: AppTheme.lightTurquoise,
+                                child: const Icon(
+                                  Icons.local_hospital,
+                                  size: 80,
+                                  color: AppTheme.white,
+                                ),
+                              ),
                       ),
                     ),
                     // İçerik
@@ -176,32 +190,114 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
     );
   }
 
-  Widget _buildImageCarousel(List<String> images) {
-    return PageView.builder(
-      controller: _pageController,
-      itemCount: images.length,
-      onPageChanged: (index) {
-        setState(() {
-          _currentImageIndex = index;
-        });
-      },
-      itemBuilder: (context, index) {
-        return Image.asset(
-          images[index],
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: AppTheme.lightTurquoise,
-              child: const Icon(
-                Icons.image,
-                size: 80,
-                color: AppTheme.white,
+  void _showFullScreenImage(
+    BuildContext context,
+    String imagePath, {
+    List<String>? allImages,
+    int initialIndex = 0,
+  }) {
+    final images = allImages ?? [imagePath];
+    final pageController = PageController(initialPage: initialIndex);
+    int currentIndex = initialIndex;
+
+    showDialog(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return WillPopScope(
+            onWillPop: () async {
+              pageController.dispose();
+              return true;
+            },
+            child: Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding: EdgeInsets.zero,
+              child: Stack(
+                children: [
+                  // Fullscreen Image Viewer
+                  PageView.builder(
+                    controller: pageController,
+                    itemCount: images.length,
+                    onPageChanged: (index) {
+                      setDialogState(() {
+                        currentIndex = index;
+                      });
+                    },
+                    itemBuilder: (context, index) {
+                      return InteractiveViewer(
+                        minScale: 0.5,
+                        maxScale: 3.0,
+                        child: Center(
+                          child: Image.asset(
+                            images[index],
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: AppTheme.inputFieldGray,
+                                padding: const EdgeInsets.all(40),
+                                child: const Icon(
+                                  Icons.image,
+                                  size: 100,
+                                  color: AppTheme.iconGray,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  // Close Button
+                  Positioned(
+                    top: 40,
+                    right: 20,
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.close,
+                        color: AppTheme.white,
+                        size: 30,
+                      ),
+                      onPressed: () {
+                        pageController.dispose();
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ),
+                  // Image Counter (if multiple images)
+                  if (images.length > 1)
+                    Positioned(
+                      bottom: 40,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '${currentIndex + 1} / ${images.length}',
+                            style: AppTheme.bodyMedium.copyWith(
+                              color: AppTheme.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
-            );
-          },
-        );
-      },
-    );
+            ),
+          );
+        },
+      ),
+    ).then((_) {
+      pageController.dispose();
+    });
   }
 
   Widget _buildGallerySection(List<String> images) {
@@ -238,19 +334,27 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: Image.asset(
-                    images[index],
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: AppTheme.inputFieldGray,
-                        child: const Icon(
-                          Icons.image,
-                          size: 60,
-                          color: AppTheme.iconGray,
-                        ),
-                      );
-                    },
+                  child: GestureDetector(
+                    onTap: () => _showFullScreenImage(
+                      context,
+                      images[index],
+                      allImages: images,
+                      initialIndex: index,
+                    ),
+                    child: Image.asset(
+                      images[index],
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: AppTheme.inputFieldGray,
+                          child: const Icon(
+                            Icons.image,
+                            size: 60,
+                            color: AppTheme.iconGray,
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
               );

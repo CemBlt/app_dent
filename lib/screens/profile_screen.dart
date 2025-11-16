@@ -165,11 +165,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 child: user.profileImage != null
                     ? ClipOval(
-                        child: Image.network(
+                        child: Image.asset(
                           user.profileImage!,
                           fit: BoxFit.cover,
                           width: 100,
                           height: 100,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              Icons.person,
+                              size: 50,
+                              color: AppTheme.tealBlue,
+                            );
+                          },
                         ),
                       )
                     : Icon(

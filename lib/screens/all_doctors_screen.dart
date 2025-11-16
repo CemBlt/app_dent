@@ -377,11 +377,18 @@ class _AllDoctorsScreenState extends State<AllDoctorsScreen> {
                   ),
                   child: doctor.image != null
                       ? ClipOval(
-                          child: Image.network(
+                          child: Image.asset(
                             doctor.image!,
                             fit: BoxFit.cover,
                             width: 80,
                             height: 80,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.person,
+                                size: 40,
+                                color: AppTheme.tealBlue,
+                              );
+                            },
                           ),
                         )
                       : Icon(

@@ -292,11 +292,18 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   child: doctor.image != null
                       ? ClipOval(
-                          child: Image.network(
+                          child: Image.asset(
                             doctor.image!,
                             fit: BoxFit.cover,
                             width: 60,
                             height: 60,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.person,
+                                size: 30,
+                                color: AppTheme.tealBlue,
+                              );
+                            },
                           ),
                         )
                       : Icon(
@@ -421,9 +428,16 @@ class _SearchScreenState extends State<SearchScreen> {
                   child: hospital.image != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
+                          child: Image.asset(
                             hospital.image!,
                             fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.local_hospital,
+                                size: 30,
+                                color: AppTheme.tealBlue,
+                              );
+                            },
                           ),
                         )
                       : Icon(

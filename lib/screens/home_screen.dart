@@ -467,11 +467,14 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: doctor.image != null
                   ? ClipOval(
-                      child: Image.network(
+                      child: Image.asset(
                         doctor.image!,
                         fit: BoxFit.cover,
                         width: 70,
                         height: 70,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(Icons.person, size: 35, color: AppTheme.tealBlue);
+                        },
                       ),
                     )
                   : Icon(Icons.person, size: 35, color: AppTheme.tealBlue),
@@ -641,9 +644,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: hospital.image != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
+                          child: Image.asset(
                             hospital.image!,
                             fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.local_hospital,
+                                size: 40,
+                                color: AppTheme.tealBlue,
+                              );
+                            },
                           ),
                         )
                       : Icon(
