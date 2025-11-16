@@ -193,7 +193,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                           Text(
                             'Randevularım',
                             style: AppTheme.headingLarge.copyWith(
-                              color: AppTheme.white,
+                              color: AppTheme.darkText,
                             ),
                           ),
                         ],

@@ -91,7 +91,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                     title: Text(
                       widget.doctor.fullName,
                       style: AppTheme.headingSmall.copyWith(
-                        color: AppTheme.white,
+                        color: AppTheme.darkText,
                       ),
                     ),
                     centerTitle: false,

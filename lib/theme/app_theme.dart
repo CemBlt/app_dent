@@ -10,7 +10,7 @@ class AppTheme {
   static const Color deepCyan = Color(0xFF007C91);
   static const Color turquoiseSoft = Color(0xFF80DEEA);
   static const Color white = Color(0xFFFFFFFF);
-  static const Color darkText = Color(0xFF023047);
+  static const Color darkText = Color(0xFF4A5568); // Orta ton koyu gri-mavi
   static const Color grayText = Color(0xFF6C757D);
   static const Color accentYellow = Color(0xFFFFD166);
 
@@ -86,6 +86,7 @@ class AppTheme {
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.transparent,
       elevation: 0,
+      foregroundColor: darkText,
       iconTheme: const IconThemeData(color: darkText),
       titleTextStyle: GoogleFonts.poppins(
         color: darkText,

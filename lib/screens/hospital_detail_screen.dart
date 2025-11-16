@@ -128,7 +128,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                         title: Text(
                           widget.hospital.name,
                           style: AppTheme.headingMedium.copyWith(
-                            color: AppTheme.white,
+                            color: AppTheme.darkText,
                           ),
                         ),
                         background: widget.hospital.image != null

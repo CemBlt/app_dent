@@ -110,7 +110,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Text(
                                 'Profil',
                                 style: AppTheme.headingLarge.copyWith(
-                                  color: AppTheme.white,
+                                  color: AppTheme.darkText,
                                 ),
                               ),
                             ],

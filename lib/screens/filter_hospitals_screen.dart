@@ -138,7 +138,7 @@ class _FilterHospitalsScreenState extends State<FilterHospitalsScreen> {
       appBar: AppBar(
         title: const Text('Hastane Filtrele'),
         backgroundColor: AppTheme.mediumTurquoise,
-        foregroundColor: AppTheme.white,
+        foregroundColor: AppTheme.darkText,
         elevation: 0,
       ),
       body: _isLoading
