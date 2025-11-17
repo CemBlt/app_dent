@@ -149,11 +149,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        /*gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [AppTheme.lightTurquoise, AppTheme.mediumTurquoise],
-        ),
+        ),*/
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -161,23 +161,6 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(
             child: Row(
               children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppTheme.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Icon(Icons.person, color: AppTheme.tealBlue),
-                ),
-                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Text(
                         'Hoş Geldiniz!',
                         style: AppTheme.headingLarge.copyWith(
-                          color: AppTheme.white,
+                          color: AppTheme.deepCyan,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -195,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Text(
                         'Randevunuzu oluşturun',
                         style: AppTheme.bodyMedium.copyWith(
-                          color: AppTheme.white.withOpacity(0.9),
+                          color: AppTheme.deepCyan.withOpacity(0.9),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

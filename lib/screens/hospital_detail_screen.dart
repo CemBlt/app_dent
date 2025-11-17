@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../models/hospital.dart';
+
 import '../models/doctor.dart';
-import '../models/service.dart';
-import '../models/review.dart';
+import '../models/hospital.dart';
 import '../models/rating.dart';
+import '../models/review.dart';
+import '../models/service.dart';
 import '../models/user.dart';
 import '../services/json_service.dart';
 import '../theme/app_theme.dart';
@@ -12,10 +13,7 @@ import 'create_appointment_screen.dart';
 class HospitalDetailScreen extends StatefulWidget {
   final Hospital hospital;
 
-  const HospitalDetailScreen({
-    super.key,
-    required this.hospital,
-  });
+  const HospitalDetailScreen({super.key, required this.hospital});
 
   @override
   State<HospitalDetailScreen> createState() => _HospitalDetailScreenState();
@@ -35,7 +33,8 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
   void initState() {
     super.initState();
     _loadData();
-    if (widget.hospital.gallery != null && widget.hospital.gallery!.isNotEmpty) {
+    if (widget.hospital.gallery != null &&
+        widget.hospital.gallery!.isNotEmpty) {
       _pageController = PageController();
     }
   }
@@ -48,7 +47,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
 
   Future<void> _loadData() async {
     final doctors = await JsonService.getDoctorsByHospital(widget.hospital.id);
-    
+
     // Hizmetleri yükle
     final allServices = await JsonService.getServices();
     final hospitalServices = allServices.where((service) {
@@ -58,7 +57,9 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
     // Yorumları ve puanlamaları yükle
     final reviews = await JsonService.getReviewsByHospital(widget.hospital.id);
     final ratings = await JsonService.getRatingsByHospital(widget.hospital.id);
-    final averageRating = await JsonService.getHospitalAverageRating(widget.hospital.id);
+    final averageRating = await JsonService.getHospitalAverageRating(
+      widget.hospital.id,
+    );
 
     setState(() {
       _doctors = doctors;
@@ -121,14 +122,17 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                       pinned: true,
                       backgroundColor: AppTheme.tealBlue,
                       leading: IconButton(
-                        icon: const Icon(Icons.arrow_back, color: AppTheme.white),
+                        icon: const Icon(
+                          Icons.arrow_back,
+                          color: AppTheme.white,
+                        ),
                         onPressed: () => Navigator.pop(context),
                       ),
                       flexibleSpace: FlexibleSpaceBar(
                         title: Text(
                           widget.hospital.name,
                           style: AppTheme.headingMedium.copyWith(
-                            color: AppTheme.darkText,
+                            color: AppTheme.white,
                           ),
                         ),
                         background: widget.hospital.image != null
@@ -321,10 +325,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Fotoğraflar',
-          style: AppTheme.headingSmall,
-        ),
+        Text('Fotoğraflar', style: AppTheme.headingSmall),
         const SizedBox(height: 12),
         SizedBox(
           height: 200,
@@ -418,10 +419,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Hastane Bilgileri',
-            style: AppTheme.headingSmall,
-          ),
+          Text('Hastane Bilgileri', style: AppTheme.headingSmall),
           const SizedBox(height: 16),
           _buildInfoRow(Icons.location_on, widget.hospital.address),
           const SizedBox(height: 12),
@@ -434,9 +432,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
             const SizedBox(height: 16),
             Text(
               widget.hospital.description,
-              style: AppTheme.bodyMedium.copyWith(
-                color: AppTheme.grayText,
-              ),
+              style: AppTheme.bodyMedium.copyWith(color: AppTheme.grayText),
             ),
           ],
         ],
@@ -450,12 +446,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
       children: [
         Icon(icon, color: AppTheme.tealBlue, size: 20),
         const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            text,
-            style: AppTheme.bodyMedium,
-          ),
-        ),
+        Expanded(child: Text(text, style: AppTheme.bodyMedium)),
       ],
     );
   }
@@ -477,16 +468,13 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Çalışma Saatleri',
-            style: AppTheme.headingSmall,
-          ),
+          Text('Çalışma Saatleri', style: AppTheme.headingSmall),
           const SizedBox(height: 16),
           ...widget.hospital.workingHours.entries.map((entry) {
             final day = _getDayName(entry.key);
             final hours = entry.value as Map<String, dynamic>;
             final isAvailable = hours['isAvailable'] == true;
-            
+
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Row(
@@ -532,10 +520,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Hizmetler',
-            style: AppTheme.headingSmall,
-          ),
+          Text('Hizmetler', style: AppTheme.headingSmall),
           const SizedBox(height: 16),
           Wrap(
             spacing: 8,
@@ -549,15 +534,11 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                 decoration: BoxDecoration(
                   color: AppTheme.lightTurquoise.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: AppTheme.tealBlue.withOpacity(0.3),
-                  ),
+                  border: Border.all(color: AppTheme.tealBlue.withOpacity(0.3)),
                 ),
                 child: Text(
                   service.name,
-                  style: AppTheme.bodySmall.copyWith(
-                    color: AppTheme.tealBlue,
-                  ),
+                  style: AppTheme.bodySmall.copyWith(color: AppTheme.tealBlue),
                 ),
               );
             }).toList(),
@@ -587,15 +568,10 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Doktorlar',
-                style: AppTheme.headingSmall,
-              ),
+              Text('Doktorlar', style: AppTheme.headingSmall),
               Text(
                 '${_doctors.length} doktor',
-                style: AppTheme.bodySmall.copyWith(
-                  color: AppTheme.grayText,
-                ),
+                style: AppTheme.bodySmall.copyWith(color: AppTheme.grayText),
               ),
             ],
           ),
@@ -637,19 +613,13 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                   : null,
             ),
             child: doctor.image == null
-                ? const Icon(
-                    Icons.person,
-                    size: 40,
-                    color: AppTheme.white,
-                  )
+                ? const Icon(Icons.person, size: 40, color: AppTheme.white)
                 : null,
           ),
           const SizedBox(height: 8),
           Text(
             doctor.name,
-            style: AppTheme.bodySmall.copyWith(
-              fontWeight: FontWeight.w500,
-            ),
+            style: AppTheme.bodySmall.copyWith(fontWeight: FontWeight.w500),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
@@ -696,18 +666,11 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Yorumlar',
-                style: AppTheme.headingSmall,
-              ),
+              Text('Yorumlar', style: AppTheme.headingSmall),
               if (_averageRating > 0)
                 Row(
                   children: [
-                    Icon(
-                      Icons.star,
-                      color: AppTheme.accentYellow,
-                      size: 20,
-                    ),
+                    Icon(Icons.star, color: AppTheme.accentYellow, size: 20),
                     const SizedBox(width: 4),
                     Text(
                       _averageRating.toStringAsFixed(1),
@@ -817,10 +780,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
           decoration: BoxDecoration(
             color: AppTheme.backgroundLight,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppTheme.dividerLight,
-              width: 1,
-            ),
+            border: Border.all(color: AppTheme.dividerLight, width: 1),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -849,11 +809,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                               },
                             ),
                           )
-                        : Icon(
-                            Icons.person,
-                            size: 20,
-                            color: AppTheme.white,
-                          ),
+                        : Icon(Icons.person, size: 20, color: AppTheme.white),
                   ),
                   const SizedBox(width: 12),
                   // Kullanıcı Adı ve Puan
@@ -896,9 +852,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
               // Yorum Metni
               Text(
                 review.comment,
-                style: AppTheme.bodyMedium.copyWith(
-                  color: AppTheme.darkText,
-                ),
+                style: AppTheme.bodyMedium.copyWith(color: AppTheme.darkText),
               ),
             ],
           ),
@@ -1004,15 +958,17 @@ class _AllReviewsDialogState extends State<_AllReviewsDialog> {
   void _onScroll() {
     // Scroll pozisyonu %80'e ulaştığında daha fazla yorum yükle
     if (!_scrollController.hasClients) return;
-    
+
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
-    
+
     if (currentScroll >= maxScroll * 0.8) {
       if (_displayedCount < widget.reviews.length) {
         setState(() {
-          _displayedCount = (_displayedCount + _loadMoreCount)
-              .clamp(0, widget.reviews.length);
+          _displayedCount = (_displayedCount + _loadMoreCount).clamp(
+            0,
+            widget.reviews.length,
+          );
         });
       }
     }
@@ -1060,10 +1016,7 @@ class _AllReviewsDialogState extends State<_AllReviewsDialog> {
           decoration: BoxDecoration(
             color: AppTheme.backgroundLight,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppTheme.dividerLight,
-              width: 1,
-            ),
+            border: Border.all(color: AppTheme.dividerLight, width: 1),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1092,11 +1045,7 @@ class _AllReviewsDialogState extends State<_AllReviewsDialog> {
                               },
                             ),
                           )
-                        : Icon(
-                            Icons.person,
-                            size: 20,
-                            color: AppTheme.white,
-                          ),
+                        : Icon(Icons.person, size: 20, color: AppTheme.white),
                   ),
                   const SizedBox(width: 12),
                   // Kullanıcı Adı ve Puan
@@ -1139,9 +1088,7 @@ class _AllReviewsDialogState extends State<_AllReviewsDialog> {
               // Yorum Metni
               Text(
                 review.comment,
-                style: AppTheme.bodyMedium.copyWith(
-                  color: AppTheme.darkText,
-                ),
+                style: AppTheme.bodyMedium.copyWith(color: AppTheme.darkText),
               ),
             ],
           ),
@@ -1156,9 +1103,7 @@ class _AllReviewsDialogState extends State<_AllReviewsDialog> {
     final hasMore = _displayedCount < widget.reviews.length;
 
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.8,
@@ -1173,10 +1118,7 @@ class _AllReviewsDialogState extends State<_AllReviewsDialog> {
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    AppTheme.lightTurquoise,
-                    AppTheme.mediumTurquoise,
-                  ],
+                  colors: [AppTheme.lightTurquoise, AppTheme.mediumTurquoise],
                 ),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
@@ -1284,4 +1226,3 @@ class _AllReviewsDialogState extends State<_AllReviewsDialog> {
     );
   }
 }
-
