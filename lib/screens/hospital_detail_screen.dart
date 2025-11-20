@@ -8,6 +8,7 @@ import '../models/service.dart';
 import '../models/user.dart';
 import '../services/json_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/image_widget.dart';
 import 'create_appointment_screen.dart';
 
 class HospitalDetailScreen extends StatefulWidget {
@@ -141,19 +142,17 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                                   context,
                                   widget.hospital.image!,
                                 ),
-                                child: Image.asset(
+                                child: buildImage(
                                   widget.hospital.image!,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      color: AppTheme.lightTurquoise,
-                                      child: const Icon(
-                                        Icons.local_hospital,
-                                        size: 80,
-                                        color: AppTheme.white,
-                                      ),
-                                    );
-                                  },
+                                  errorWidget: Container(
+                                    color: AppTheme.lightTurquoise,
+                                    child: const Icon(
+                                      Icons.local_hospital,
+                                      size: 80,
+                                      color: AppTheme.white,
+                                    ),
+                                  ),
                                 ),
                               )
                             : Container(
@@ -250,20 +249,18 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                         minScale: 0.5,
                         maxScale: 3.0,
                         child: Center(
-                          child: Image.asset(
+                          child: buildImage(
                             images[index],
                             fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: AppTheme.inputFieldGray,
-                                padding: const EdgeInsets.all(40),
-                                child: const Icon(
-                                  Icons.image,
-                                  size: 100,
-                                  color: AppTheme.iconGray,
-                                ),
-                              );
-                            },
+                            errorWidget: Container(
+                              color: AppTheme.inputFieldGray,
+                              padding: const EdgeInsets.all(40),
+                              child: const Icon(
+                                Icons.image,
+                                size: 100,
+                                color: AppTheme.iconGray,
+                              ),
+                            ),
                           ),
                         ),
                       );
@@ -359,19 +356,17 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                       allImages: images,
                       initialIndex: index,
                     ),
-                    child: Image.asset(
+                    child: buildImage(
                       images[index],
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: AppTheme.inputFieldGray,
-                          child: const Icon(
-                            Icons.image,
-                            size: 60,
-                            color: AppTheme.iconGray,
-                          ),
-                        );
-                      },
+                      errorWidget: Container(
+                        color: AppTheme.inputFieldGray,
+                        child: const Icon(
+                          Icons.image,
+                          size: 60,
+                          color: AppTheme.iconGray,
+                        ),
+                      ),
                     ),
                   ),
                 ),
