@@ -638,6 +638,10 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
     required String hint,
     bool enabled = true,
   }) {
+    // Duplicate değerleri temizle ve seçili değerin items'da olup olmadığını kontrol et
+    final uniqueItems = items.toSet().toList();
+    final validValue = value != null && uniqueItems.contains(value) ? value : null;
+    
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.inputFieldGray,
@@ -647,8 +651,8 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
         ),
       ),
       child: DropdownButtonFormField<String>(
-        value: value,
-        items: items.map((item) {
+        value: validValue,
+        items: uniqueItems.map((item) {
           return DropdownMenuItem<String>(
             value: item,
             child: Text(
@@ -678,6 +682,51 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
     required String Function(T) getLabel,
     bool enabled = true,
   }) {
+    // Seçili değerin items listesinde olup olmadığını kontrol et
+    // Eğer yoksa veya duplicate varsa, value'yu null yap
+    T? validValue;
+    if (value != null && items.isNotEmpty) {
+      // ID'leri karşılaştırarak kontrol et (Hospital, Doctor, Service için)
+      String? valueId;
+      if (value is Hospital) {
+        valueId = (value as Hospital).id;
+      } else if (value is Doctor) {
+        valueId = (value as Doctor).id;
+      } else if (value is Service) {
+        valueId = (value as Service).id;
+      }
+      
+      if (valueId != null) {
+        // Items listesinde aynı ID'ye sahip kaç item var kontrol et
+        final matchingItems = items.where((item) {
+          if (item is Hospital) return (item as Hospital).id == valueId;
+          if (item is Doctor) return (item as Doctor).id == valueId;
+          if (item is Service) return (item as Service).id == valueId;
+          return item == value;
+        }).toList();
+        
+        if (matchingItems.length == 1) {
+          validValue = matchingItems.first;
+        } else {
+          // Duplicate varsa veya hiç yoksa, null yap
+          validValue = null;
+        }
+      } else {
+        // ID yoksa, == operatörü ile kontrol et
+        final matchingCount = items.where((item) => item == value).length;
+        if (matchingCount == 1) {
+          try {
+            final foundItem = items.firstWhere((item) => item == value);
+            validValue = foundItem;
+          } catch (e) {
+            validValue = null;
+          }
+        } else {
+          validValue = null;
+        }
+      }
+    }
+    
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.inputFieldGray,
@@ -687,7 +736,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
         ),
       ),
       child: DropdownButtonFormField<T>(
-        value: value,
+        value: validValue,
         items: items.map((item) {
           return DropdownMenuItem<T>(
             value: item,
@@ -767,6 +816,19 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
   }
 
   Widget _buildTimeDropdown() {
+    // Seçili saatin availableTimes listesinde olup olmadığını kontrol et
+    // Eğer yoksa veya duplicate varsa, null yap
+    String? validTime;
+    if (_selectedTime != null && _availableTimes.isNotEmpty) {
+      final matchingTimes = _availableTimes.where((time) => time == _selectedTime).toList();
+      if (matchingTimes.length == 1) {
+        validTime = _selectedTime;
+      } else {
+        // Duplicate varsa veya hiç yoksa, null yap
+        validTime = null;
+      }
+    }
+    
     return Container(
       decoration: BoxDecoration(
         color: _selectedDate != null && _availableTimes.isNotEmpty
@@ -780,7 +842,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
         ),
       ),
       child: DropdownButtonFormField<String>(
-        value: _selectedTime,
+        value: validTime,
         items: _availableTimes.map((time) {
           return DropdownMenuItem<String>(
             value: time,
