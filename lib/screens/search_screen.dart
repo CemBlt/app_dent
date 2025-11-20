@@ -3,6 +3,7 @@ import '../theme/app_theme.dart';
 import '../models/doctor.dart';
 import '../models/hospital.dart';
 import '../services/json_service.dart';
+import '../widgets/image_widget.dart';
 import 'hospital_detail_screen.dart';
 import 'doctor_detail_screen.dart';
 
@@ -300,18 +301,16 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   child: doctor.image != null
                       ? ClipOval(
-                          child: Image.asset(
+                          child: buildImage(
                             doctor.image!,
                             fit: BoxFit.cover,
                             width: 60,
                             height: 60,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                Icons.person,
-                                size: 30,
-                                color: AppTheme.tealBlue,
-                              );
-                            },
+                            errorWidget: Icon(
+                              Icons.person,
+                              size: 30,
+                              color: AppTheme.tealBlue,
+                            ),
                           ),
                         )
                       : Icon(
@@ -436,16 +435,14 @@ class _SearchScreenState extends State<SearchScreen> {
                   child: hospital.image != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
+                          child: buildImage(
                             hospital.image!,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                Icons.local_hospital,
-                                size: 30,
-                                color: AppTheme.tealBlue,
-                              );
-                            },
+                            errorWidget: Icon(
+                              Icons.local_hospital,
+                              size: 30,
+                              color: AppTheme.tealBlue,
+                            ),
                           ),
                         )
                       : Icon(

@@ -3,6 +3,7 @@ import '../theme/app_theme.dart';
 import '../models/doctor.dart';
 import '../models/hospital.dart';
 import '../services/json_service.dart';
+import '../widgets/image_widget.dart';
 import 'doctor_detail_screen.dart';
 
 class AllDoctorsScreen extends StatefulWidget {
@@ -385,18 +386,16 @@ class _AllDoctorsScreenState extends State<AllDoctorsScreen> {
                   ),
                   child: doctor.image != null
                       ? ClipOval(
-                          child: Image.asset(
+                          child: buildImage(
                             doctor.image!,
                             fit: BoxFit.cover,
                             width: 80,
                             height: 80,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                Icons.person,
-                                size: 40,
-                                color: AppTheme.tealBlue,
-                              );
-                            },
+                            errorWidget: Icon(
+                              Icons.person,
+                              size: 40,
+                              color: AppTheme.tealBlue,
+                            ),
                           ),
                         )
                       : Icon(

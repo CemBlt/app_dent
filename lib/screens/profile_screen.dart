@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../models/user.dart';
 import '../services/json_service.dart';
+import '../widgets/image_widget.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -165,18 +166,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 child: user.profileImage != null
                     ? ClipOval(
-                        child: Image.asset(
+                        child: buildImage(
                           user.profileImage!,
                           fit: BoxFit.cover,
                           width: 100,
                           height: 100,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(
-                              Icons.person,
-                              size: 50,
-                              color: AppTheme.tealBlue,
-                            );
-                          },
+                          errorWidget: Icon(
+                            Icons.person,
+                            size: 50,
+                            color: AppTheme.tealBlue,
+                          ),
                         ),
                       )
                     : Icon(

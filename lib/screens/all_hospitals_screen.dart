@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../models/hospital.dart';
 import '../services/json_service.dart';
+import '../widgets/image_widget.dart';
 import 'hospital_detail_screen.dart';
 
 class AllHospitalsScreen extends StatefulWidget {
@@ -399,16 +400,14 @@ class _AllHospitalsScreenState extends State<AllHospitalsScreen> {
                   child: hospital.image != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
+                          child: buildImage(
                             hospital.image!,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                Icons.local_hospital,
-                                size: 40,
-                                color: AppTheme.tealBlue,
-                              );
-                            },
+                            errorWidget: Icon(
+                              Icons.local_hospital,
+                              size: 40,
+                              color: AppTheme.tealBlue,
+                            ),
                           ),
                         )
                       : Icon(

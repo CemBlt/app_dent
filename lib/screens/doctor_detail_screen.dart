@@ -6,6 +6,7 @@ import '../models/rating.dart';
 import '../models/user.dart';
 import '../services/json_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/image_widget.dart';
 import 'create_appointment_screen.dart';
 import 'hospital_detail_screen.dart';
 
@@ -114,26 +115,24 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                       child: Center(
                         child: widget.doctor.image != null
                             ? ClipOval(
-                                child: Image.asset(
+                                child: buildImage(
                                   widget.doctor.image!,
                                   width: 150,
                                   height: 150,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      width: 150,
-                                      height: 150,
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.white.withOpacity(0.3),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.person,
-                                        size: 80,
-                                        color: AppTheme.white,
-                                      ),
-                                    );
-                                  },
+                                  errorWidget: Container(
+                                    width: 150,
+                                    height: 150,
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.white.withOpacity(0.3),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.person,
+                                      size: 80,
+                                      color: AppTheme.white,
+                                    ),
+                                  ),
                                 ),
                               )
                             : Container(
@@ -328,16 +327,14 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                   child: _hospital!.image != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
+                          child: buildImage(
                             _hospital!.image!,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                Icons.local_hospital,
-                                size: 30,
-                                color: AppTheme.tealBlue,
-                              );
-                            },
+                            errorWidget: Icon(
+                              Icons.local_hospital,
+                              size: 30,
+                              color: AppTheme.tealBlue,
+                            ),
                           ),
                         )
                       : Icon(
@@ -626,16 +623,14 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                     ),
                     child: user?.profileImage != null
                         ? ClipOval(
-                            child: Image.asset(
+                            child: buildImage(
                               user!.profileImage!,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  Icons.person,
-                                  size: 20,
-                                  color: AppTheme.white,
-                                );
-                              },
+                              errorWidget: Icon(
+                                Icons.person,
+                                size: 20,
+                                color: AppTheme.white,
+                              ),
                             ),
                           )
                         : Icon(
@@ -869,16 +864,14 @@ class _AllReviewsDialogState extends State<_AllReviewsDialog> {
                     ),
                     child: user?.profileImage != null
                         ? ClipOval(
-                            child: Image.asset(
+                            child: buildImage(
                               user!.profileImage!,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  Icons.person,
-                                  size: 20,
-                                  color: AppTheme.white,
-                                );
-                              },
+                              errorWidget: Icon(
+                                Icons.person,
+                                size: 20,
+                                color: AppTheme.white,
+                              ),
                             ),
                           )
                         : Icon(

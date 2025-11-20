@@ -5,6 +5,7 @@ import '../models/hospital.dart';
 import '../models/tip.dart';
 import '../services/json_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/image_widget.dart';
 import 'all_doctors_screen.dart';
 import 'all_hospitals_screen.dart';
 import 'create_appointment_screen.dart';
@@ -482,18 +483,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: doctor.image != null
                       ? ClipOval(
-                          child: Image.asset(
+                          child: buildImage(
                             doctor.image!,
                             fit: BoxFit.cover,
                             width: 70,
                             height: 70,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                Icons.person,
-                                size: 35,
-                                color: AppTheme.tealBlue,
-                              );
-                            },
+                            errorWidget: Icon(
+                              Icons.person,
+                              size: 35,
+                              color: AppTheme.tealBlue,
+                            ),
                           ),
                         )
                       : Icon(Icons.person, size: 35, color: AppTheme.tealBlue),
@@ -667,16 +666,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: hospital.image != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
+                          child: buildImage(
                             hospital.image!,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                Icons.local_hospital,
-                                size: 40,
-                                color: AppTheme.tealBlue,
-                              );
-                            },
+                            errorWidget: Icon(
+                              Icons.local_hospital,
+                              size: 40,
+                              color: AppTheme.tealBlue,
+                            ),
                           ),
                         )
                       : Icon(
