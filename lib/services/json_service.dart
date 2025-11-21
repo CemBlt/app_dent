@@ -221,7 +221,6 @@ class JsonService {
       id: dbData['id'].toString(),
       name: dbData['name'] ?? '',
       description: dbData['description'] ?? '',
-      price: dbData['price'] ?? 0,
     );
   }
 
