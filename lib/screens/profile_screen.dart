@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../models/user.dart';
 import '../services/json_service.dart';
+import '../services/auth_service.dart';
 import '../widgets/image_widget.dart';
+import 'login_screen.dart';
+import 'main_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -22,10 +25,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadUserData() async {
-    // Şimdilik userId = "1" kullanıyoruz
-    const String currentUserId = "1";
+    if (!AuthService.isAuthenticated) {
+      setState(() {
+        _user = null;
+        _isLoading = false;
+      });
+      return;
+    }
+
+    final userId = AuthService.currentUserId;
+    if (userId == null) {
+      setState(() {
+        _user = null;
+        _isLoading = false;
+      });
+      return;
+    }
     
-    final user = await JsonService.getUser(currentUserId);
+    final user = await JsonService.getUser(userId);
     
     setState(() {
       _user = user;
@@ -51,15 +68,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // Çıkış işlemi (şimdilik sadece mesaj)
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Çıkış yapıldı'),
-                  backgroundColor: AppTheme.successGreen,
-                ),
-              );
+              await AuthService.signOut();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Çıkış yapıldı'),
+                    backgroundColor: AppTheme.successGreen,
+                  ),
+                );
+                // Ana sayfaya dön
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const MainScreen()),
+                  (route) => false,
+                );
+              }
             },
             child: Text(
               'Çıkış Yap',
@@ -119,7 +143,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 24),
                         // Profil Bilgileri Kartı
-                        if (_user != null) _buildProfileCard(_user!),
+                        if (_user != null) 
+                          _buildProfileCard(_user!)
+                        else if (!_isLoading && !AuthService.isAuthenticated)
+                          _buildNotLoggedInCard(),
                         const SizedBox(height: 24),
                         // Menü Seçenekleri
                         _buildMenuSection(),
@@ -373,6 +400,96 @@ class _ProfileScreenState extends State<ProfileScreen> {
       thickness: 1,
       color: AppTheme.dividerLight,
       indent: 60,
+    );
+  }
+
+  Widget _buildNotLoggedInCard() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              Icon(
+                Icons.person_outline,
+                size: 64,
+                color: AppTheme.iconGray,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Giriş Yapın',
+                style: AppTheme.headingMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Randevu oluşturmak ve randevularınızı görmek için giriş yapın',
+                style: AppTheme.bodyMedium.copyWith(
+                  color: AppTheme.grayText,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppTheme.tealBlue, AppTheme.deepCyan],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => LoginScreen(
+                            onLoginSuccess: () {
+                              Navigator.pop(context);
+                              _loadUserData();
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.login, color: AppTheme.white, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Giriş Yap',
+                            style: AppTheme.bodyMedium.copyWith(
+                              color: AppTheme.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -5,6 +5,8 @@ import '../models/doctor.dart';
 import '../models/service.dart';
 import '../models/appointment.dart';
 import '../services/json_service.dart';
+import '../services/auth_service.dart';
+import 'login_screen.dart';
 
 class CreateAppointmentScreen extends StatefulWidget {
   final String? preselectedHospitalId;
@@ -41,6 +43,31 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
   @override
   void initState() {
     super.initState();
+    _checkAuthenticationAndLoadData();
+  }
+
+  Future<void> _checkAuthenticationAndLoadData() async {
+    // Eğer kullanıcı giriş yapmamışsa, login ekranına yönlendir
+    if (!AuthService.isAuthenticated) {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => LoginScreen(
+            onLoginSuccess: () {
+              Navigator.pop(context, true);
+            },
+          ),
+        ),
+      );
+      
+      // Kullanıcı login ekranından geri döndüyse ve hala giriş yapmamışsa, bu ekranı kapat
+      if (!AuthService.isAuthenticated) {
+        Navigator.pop(context);
+        return;
+      }
+    }
+    
+    // Giriş yapıldıysa veya zaten giriş yapılmışsa, verileri yükle
     _loadData();
   }
 
@@ -328,7 +355,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
         _selectedTime != null;
   }
 
-  void _createAppointment() {
+  Future<void> _createAppointment() async {
     if (!_isFormValid()) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -339,16 +366,90 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
       return;
     }
 
-    // Randevu oluşturma işlemi (şimdilik sadece mesaj)
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Randevu başarıyla oluşturuldu'),
-        backgroundColor: AppTheme.successGreen,
-      ),
-    );
+    // Giriş kontrolü
+    if (!AuthService.isAuthenticated) {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => LoginScreen(
+            onLoginSuccess: () {
+              Navigator.pop(context, true);
+            },
+          ),
+        ),
+      );
+      
+      if (!AuthService.isAuthenticated) {
+        return;
+      }
+    }
 
-    // Geri dön
-    Navigator.pop(context);
+    final userId = AuthService.currentUserId;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Kullanıcı bilgisi alınamadı. Lütfen tekrar giriş yapın.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Loading göster
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Tarih formatını düzenle (YYYY-MM-DD)
+      final dateString = '${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}';
+      
+      final appointment = await JsonService.createAppointment(
+        userId: userId,
+        hospitalId: _selectedHospital!.id,
+        doctorId: _selectedDoctor!.id,
+        date: dateString,
+        time: _selectedTime!,
+        serviceId: _selectedService!.id,
+        notes: _notesController.text.trim(),
+      );
+
+      if (appointment != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Randevu başarıyla oluşturuldu'),
+              backgroundColor: AppTheme.successGreen,
+            ),
+          );
+          Navigator.pop(context, true);
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Randevu oluşturulurken bir hata oluştu'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Randevu oluşturulurken bir hata oluştu: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -638,6 +739,10 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
     required String hint,
     bool enabled = true,
   }) {
+    // Duplicate değerleri temizle ve seçili değerin items'da olup olmadığını kontrol et
+    final uniqueItems = items.toSet().toList();
+    final validValue = value != null && uniqueItems.contains(value) ? value : null;
+    
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.inputFieldGray,
@@ -647,8 +752,8 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
         ),
       ),
       child: DropdownButtonFormField<String>(
-        value: value,
-        items: items.map((item) {
+        value: validValue,
+        items: uniqueItems.map((item) {
           return DropdownMenuItem<String>(
             value: item,
             child: Text(
@@ -678,6 +783,51 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
     required String Function(T) getLabel,
     bool enabled = true,
   }) {
+    // Seçili değerin items listesinde olup olmadığını kontrol et
+    // Eğer yoksa veya duplicate varsa, value'yu null yap
+    T? validValue;
+    if (value != null && items.isNotEmpty) {
+      // ID'leri karşılaştırarak kontrol et (Hospital, Doctor, Service için)
+      String? valueId;
+      if (value is Hospital) {
+        valueId = (value as Hospital).id;
+      } else if (value is Doctor) {
+        valueId = (value as Doctor).id;
+      } else if (value is Service) {
+        valueId = (value as Service).id;
+      }
+      
+      if (valueId != null) {
+        // Items listesinde aynı ID'ye sahip kaç item var kontrol et
+        final matchingItems = items.where((item) {
+          if (item is Hospital) return (item as Hospital).id == valueId;
+          if (item is Doctor) return (item as Doctor).id == valueId;
+          if (item is Service) return (item as Service).id == valueId;
+          return item == value;
+        }).toList();
+        
+        if (matchingItems.length == 1) {
+          validValue = matchingItems.first;
+        } else {
+          // Duplicate varsa veya hiç yoksa, null yap
+          validValue = null;
+        }
+      } else {
+        // ID yoksa, == operatörü ile kontrol et
+        final matchingCount = items.where((item) => item == value).length;
+        if (matchingCount == 1) {
+          try {
+            final foundItem = items.firstWhere((item) => item == value);
+            validValue = foundItem;
+          } catch (e) {
+            validValue = null;
+          }
+        } else {
+          validValue = null;
+        }
+      }
+    }
+    
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.inputFieldGray,
@@ -687,7 +837,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
         ),
       ),
       child: DropdownButtonFormField<T>(
-        value: value,
+        value: validValue,
         items: items.map((item) {
           return DropdownMenuItem<T>(
             value: item,
@@ -767,6 +917,19 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
   }
 
   Widget _buildTimeDropdown() {
+    // Seçili saatin availableTimes listesinde olup olmadığını kontrol et
+    // Eğer yoksa veya duplicate varsa, null yap
+    String? validTime;
+    if (_selectedTime != null && _availableTimes.isNotEmpty) {
+      final matchingTimes = _availableTimes.where((time) => time == _selectedTime).toList();
+      if (matchingTimes.length == 1) {
+        validTime = _selectedTime;
+      } else {
+        // Duplicate varsa veya hiç yoksa, null yap
+        validTime = null;
+      }
+    }
+    
     return Container(
       decoration: BoxDecoration(
         color: _selectedDate != null && _availableTimes.isNotEmpty
@@ -780,7 +943,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
         ),
       ),
       child: DropdownButtonFormField<String>(
-        value: _selectedTime,
+        value: validTime,
         items: _availableTimes.map((time) {
           return DropdownMenuItem<String>(
             value: time,
