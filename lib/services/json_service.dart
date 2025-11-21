@@ -7,6 +7,7 @@ import '../models/user.dart';
 import '../models/review.dart';
 import '../models/rating.dart';
 import 'supabase_service.dart';
+import 'auth_service.dart';
 
 class JsonService {
   // ==================== HASTANELER ====================
@@ -146,6 +147,7 @@ class JsonService {
       status: dbData['status'] ?? 'pending',
       service: dbData['service_id'].toString(),
       notes: dbData['notes'] ?? '',
+      review: dbData['review'] as String?,
       createdAt: dbData['created_at'] ?? '',
     );
   }
@@ -163,6 +165,109 @@ class JsonService {
       return data.map((json) => _appointmentFromDb(json)).toList();
     } catch (e) {
       return [];
+    }
+  }
+
+  /// Appointment ID'ye göre yorumu getirir
+  static Future<Review?> getReviewByAppointmentId(String appointmentId) async {
+    try {
+      final response = await SupabaseService.supabase
+          .from('reviews')
+          .select()
+          .eq('appointment_id', appointmentId)
+          .maybeSingle();
+      
+      if (response == null) {
+        return null;
+      }
+      
+      return _reviewFromDb(response as Map<String, dynamic>);
+    } catch (e) {
+      print('Yorum getirme hatası: $e');
+      return null;
+    }
+  }
+
+  /// Supabase formatından Review modeline çevirir
+  static Review _reviewFromDb(Map<String, dynamic> dbData) {
+    return Review(
+      id: dbData['id'].toString(),
+      userId: dbData['user_id'].toString(),
+      hospitalId: dbData['hospital_id'].toString(),
+      doctorId: dbData['doctor_id']?.toString(),
+      appointmentId: dbData['appointment_id'].toString(),
+      comment: dbData['comment'] ?? '',
+      createdAt: dbData['created_at'] ?? '',
+    );
+  }
+
+  /// Randevu yorumunu reviews tablosuna ekler veya günceller
+  static Future<bool> updateAppointmentReview(String appointmentId, String review) async {
+    try {
+      final userId = AuthService.currentUserId;
+      if (userId == null) {
+        print('Kullanıcı giriş yapmamış');
+        return false;
+      }
+
+      // Önce randevu bilgilerini al
+      final appointmentResponse = await SupabaseService.supabase
+          .from('appointments')
+          .select('hospital_id, doctor_id')
+          .eq('id', appointmentId)
+          .maybeSingle();
+      
+      if (appointmentResponse == null) {
+        print('Randevu bulunamadı');
+        return false;
+      }
+
+      final appointment = appointmentResponse as Map<String, dynamic>;
+      final hospitalId = appointment['hospital_id'].toString();
+      final doctorId = appointment['doctor_id'].toString();
+
+      // Mevcut yorumu kontrol et
+      final existingReviewResponse = await SupabaseService.supabase
+          .from('reviews')
+          .select('id')
+          .eq('appointment_id', appointmentId)
+          .maybeSingle();
+
+      if (existingReviewResponse != null) {
+        // Yorum varsa güncelle
+        final existingReview = existingReviewResponse as Map<String, dynamic>;
+        if (review.isEmpty) {
+          // Yorum boşsa sil
+          await SupabaseService.supabase
+              .from('reviews')
+              .delete()
+              .eq('id', existingReview['id']);
+        } else {
+          // Yorumu güncelle
+          await SupabaseService.supabase
+              .from('reviews')
+              .update({'comment': review})
+              .eq('id', existingReview['id']);
+        }
+      } else {
+        // Yorum yoksa ve yeni yorum varsa ekle
+        if (review.isNotEmpty) {
+          await SupabaseService.supabase
+              .from('reviews')
+              .insert({
+                'user_id': userId,
+                'hospital_id': hospitalId,
+                'doctor_id': doctorId,
+                'appointment_id': appointmentId,
+                'comment': review,
+              });
+        }
+      }
+      
+      return true;
+    } catch (e) {
+      print('Yorum güncelleme hatası: $e');
+      return false;
     }
   }
 
@@ -194,7 +299,9 @@ class JsonService {
       
       return _appointmentFromDb(response);
     } catch (e) {
-      return null;
+      // Hata detayını logla
+      print('Randevu oluşturma hatası: $e');
+      rethrow; // Hatayı yukarı fırlat ki detaylı mesaj gösterilebilsin
     }
   }
 
@@ -296,23 +403,10 @@ class JsonService {
           .order('created_at', ascending: false);
       
       final List<dynamic> data = response;
-      return data.map((json) => _reviewFromDb(json)).toList();
+      return data.map((json) => _reviewFromDb(json as Map<String, dynamic>)).toList();
     } catch (e) {
       return [];
     }
-  }
-
-  /// Supabase formatından Review modeline çevirir
-  static Review _reviewFromDb(Map<String, dynamic> dbData) {
-    return Review(
-      id: dbData['id'].toString(),
-      userId: dbData['user_id'].toString(),
-      hospitalId: dbData['hospital_id'].toString(),
-      doctorId: dbData['doctor_id']?.toString(),
-      appointmentId: dbData['appointment_id'].toString(),
-      comment: dbData['comment'] ?? '',
-      createdAt: dbData['created_at'] ?? '',
-    );
   }
 
   /// Belirli bir hastanenin yorumlarını getir
@@ -325,7 +419,7 @@ class JsonService {
           .order('created_at', ascending: false);
       
       final List<dynamic> data = response;
-      return data.map((json) => _reviewFromDb(json)).toList();
+      return data.map((json) => _reviewFromDb(json as Map<String, dynamic>)).toList();
     } catch (e) {
       return [];
     }
@@ -341,7 +435,7 @@ class JsonService {
           .order('created_at', ascending: false);
       
       final List<dynamic> data = response;
-      return data.map((json) => _reviewFromDb(json)).toList();
+      return data.map((json) => _reviewFromDb(json as Map<String, dynamic>)).toList();
     } catch (e) {
       return [];
     }

@@ -555,6 +555,33 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                 ),
               ),
             ],
+            // Yorum (Sadece geçmiş randevularda)
+            if (appointment.status == 'completed' || appointment.status == 'cancelled') ...[
+              const SizedBox(height: 16),
+              Divider(color: AppTheme.dividerLight),
+              const SizedBox(height: 8),
+              // Yorum ekle/düzenle butonu
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _showReviewDialog(appointment),
+                  icon: Icon(Icons.rate_review, size: 18, color: AppTheme.tealBlue),
+                  label: Text(
+                    'Yorum Ekle / Düzenle',
+                    style: AppTheme.bodyMedium.copyWith(
+                      color: AppTheme.tealBlue,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: AppTheme.tealBlue),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -592,6 +619,85 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _showReviewDialog(Appointment appointment) async {
+    // Mevcut yorumu reviews tablosundan çek
+    String? existingReview;
+    try {
+      final reviewResponse = await JsonService.getReviewByAppointmentId(appointment.id);
+      existingReview = reviewResponse?.comment;
+    } catch (e) {
+      print('Yorum çekme hatası: $e');
+    }
+    
+    final reviewController = TextEditingController(text: existingReview ?? '');
+    
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(existingReview != null ? 'Yorumu Düzenle' : 'Yorum Ekle', style: AppTheme.headingSmall),
+          content: TextField(
+            controller: reviewController,
+            maxLines: 5,
+            decoration: InputDecoration(
+              hintText: 'Randevunuz hakkında yorumunuzu yazın...',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              filled: true,
+              fillColor: AppTheme.inputFieldGray,
+            ),
+            style: AppTheme.bodyMedium,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('İptal', style: AppTheme.bodyMedium.copyWith(color: AppTheme.grayText)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final review = reviewController.text.trim();
+                await _updateAppointmentReview(appointment.id, review);
+                if (mounted) {
+                  Navigator.pop(context);
+                  _loadData(); // Listeyi yenile
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.tealBlue,
+                foregroundColor: AppTheme.white,
+              ),
+              child: Text('Kaydet', style: AppTheme.bodyMedium.copyWith(color: AppTheme.white)),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Future<void> _updateAppointmentReview(String appointmentId, String review) async {
+    try {
+      await JsonService.updateAppointmentReview(appointmentId, review);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(review.isEmpty ? 'Yorum silindi' : 'Yorum kaydedildi'),
+            backgroundColor: AppTheme.successGreen,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Yorum kaydedilirken bir hata oluştu'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   String _formatDate(String date) {

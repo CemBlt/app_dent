@@ -8,6 +8,7 @@ class Appointment {
   final String status; // pending, completed, cancelled
   final String service;
   final String notes;
+  final String? review; // Yorum/Değerlendirme
   final String createdAt;
 
   Appointment({
@@ -20,6 +21,7 @@ class Appointment {
     required this.status,
     required this.service,
     required this.notes,
+    this.review,
     required this.createdAt,
   });
 
@@ -34,6 +36,7 @@ class Appointment {
       status: json['status'] as String,
       service: json['service'] as String,
       notes: json['notes'] as String,
+      review: json['review'] as String?,
       createdAt: json['createdAt'] as String,
     );
   }
@@ -49,6 +52,7 @@ class Appointment {
       'status': status,
       'service': service,
       'notes': notes,
+      'review': review,
       'createdAt': createdAt,
     };
   }

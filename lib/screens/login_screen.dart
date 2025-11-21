@@ -91,7 +91,23 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 20),
+                  // Back button
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      icon: Icon(Icons.arrow_back, color: AppTheme.darkText),
+                      onPressed: () {
+                        // Build tamamlandıktan sonra geri git
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted && Navigator.canPop(context)) {
+                            Navigator.pop(context);
+                          }
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   // Logo veya başlık
                   Text(
                     'Giriş Yap',
@@ -232,14 +248,31 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       TextButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => RegisterScreen(
-                                onRegisterSuccess: widget.onLoginSuccess,
-                              ),
-                            ),
-                          );
+                          // Build tamamlandıktan sonra navigasyon yap
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (mounted) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => RegisterScreen(
+                                    onRegisterSuccess: () {
+                                      // Kayıt başarılı olduğunda
+                                      if (mounted) {
+                                        Navigator.pop(context); // RegisterScreen'i kapat
+                                        if (widget.onLoginSuccess != null) {
+                                          // Eğer login success callback'i varsa, onu çağır
+                                          widget.onLoginSuccess!();
+                                        } else {
+                                          // Yoksa login ekranını da kapat
+                                          Navigator.pop(context);
+                                        }
+                                      }
+                                    },
+                                  ),
+                                ),
+                              );
+                            }
+                          });
                         },
                         child: Text(
                           'Kayıt Ol',

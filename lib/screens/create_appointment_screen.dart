@@ -43,7 +43,10 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
   @override
   void initState() {
     super.initState();
-    _checkAuthenticationAndLoadData();
+    // Build tamamlandıktan sonra authentication kontrolü yap
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAuthenticationAndLoadData();
+    });
   }
 
   Future<void> _checkAuthenticationAndLoadData() async {
@@ -62,13 +65,17 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
       
       // Kullanıcı login ekranından geri döndüyse ve hala giriş yapmamışsa, bu ekranı kapat
       if (!AuthService.isAuthenticated) {
-        Navigator.pop(context);
+        if (mounted) {
+          Navigator.pop(context);
+        }
         return;
       }
     }
     
     // Giriş yapıldıysa veya zaten giriş yapılmışsa, verileri yükle
-    _loadData();
+    if (mounted) {
+      _loadData();
+    }
   }
 
   Future<void> _loadData() async {
@@ -404,6 +411,14 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
       // Tarih formatını düzenle (YYYY-MM-DD)
       final dateString = '${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}';
       
+      print('Randevu oluşturuluyor:');
+      print('userId: $userId');
+      print('hospitalId: ${_selectedHospital!.id}');
+      print('doctorId: ${_selectedDoctor!.id}');
+      print('date: $dateString');
+      print('time: ${_selectedTime!}');
+      print('serviceId: ${_selectedService!.id}');
+      
       final appointment = await JsonService.createAppointment(
         userId: userId,
         hospitalId: _selectedHospital!.id,
@@ -428,18 +443,32 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Randevu oluşturulurken bir hata oluştu'),
+              content: Text('Randevu oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.'),
               backgroundColor: Colors.red,
+              duration: const Duration(seconds: 4),
             ),
           );
         }
       }
     } catch (e) {
+      print('Randevu oluşturma hatası (catch): $e');
       if (mounted) {
+        String errorMessage = 'Randevu oluşturulurken bir hata oluştu';
+        
+        // Hata mesajını daha anlaşılır hale getir
+        if (e.toString().contains('duplicate') || e.toString().contains('unique')) {
+          errorMessage = 'Bu saat için zaten bir randevunuz var';
+        } else if (e.toString().contains('foreign key') || e.toString().contains('constraint')) {
+          errorMessage = 'Seçilen bilgiler geçersiz. Lütfen tekrar seçin.';
+        } else if (e.toString().contains('network') || e.toString().contains('connection')) {
+          errorMessage = 'İnternet bağlantınızı kontrol edin';
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Randevu oluşturulurken bir hata oluştu: ${e.toString()}'),
+            content: Text(errorMessage),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
