@@ -5,7 +5,9 @@ import '../models/doctor.dart';
 import '../models/hospital.dart';
 import '../models/service.dart';
 import '../services/json_service.dart';
+import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
+import 'login_screen.dart';
 
 class AppointmentsScreen extends StatefulWidget {
   const AppointmentsScreen({super.key});
@@ -29,10 +31,30 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
   }
 
   Future<void> _loadData() async {
-    // Şimdilik userId = "1" kullanıyoruz
-    const String currentUserId = "1";
+    if (!AuthService.isAuthenticated) {
+      setState(() {
+        _appointments = [];
+        _hospitals = [];
+        _doctors = [];
+        _services = [];
+        _isLoading = false;
+      });
+      return;
+    }
 
-    final appointments = await JsonService.getUserAppointments(currentUserId);
+    final userId = AuthService.currentUserId;
+    if (userId == null) {
+      setState(() {
+        _appointments = [];
+        _hospitals = [];
+        _doctors = [];
+        _services = [];
+        _isLoading = false;
+      });
+      return;
+    }
+
+    final appointments = await JsonService.getUserAppointments(userId);
     final hospitals = await JsonService.getHospitals();
     final doctors = await JsonService.getDoctors();
     final services = await JsonService.getServices();
@@ -223,12 +245,14 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                     ),
                     // List
                     Expanded(
-                      child: RefreshIndicator(
-                        onRefresh: _loadData,
-                        child: _selectedTab == 0
-                            ? _buildAppointmentsList(_pendingAppointments)
-                            : _buildAppointmentsList(_pastAppointments),
-                      ),
+                      child: !AuthService.isAuthenticated
+                          ? _buildNotLoggedInView()
+                          : RefreshIndicator(
+                              onRefresh: _loadData,
+                              child: _selectedTab == 0
+                                  ? _buildAppointmentsList(_pendingAppointments)
+                                  : _buildAppointmentsList(_pastAppointments),
+                            ),
                     ),
                   ],
                 ),
@@ -285,6 +309,68 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotLoggedInView() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.login,
+              size: 64,
+              color: AppTheme.iconGray,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Giriş Yapın',
+              style: AppTheme.headingMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Randevularınızı görmek için giriş yapın',
+              style: AppTheme.bodyMedium.copyWith(
+                color: AppTheme.grayText,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => LoginScreen(
+                      onLoginSuccess: () {
+                        Navigator.pop(context);
+                        _loadData();
+                      },
+                    ),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.tealBlue,
+                foregroundColor: AppTheme.white,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                'Giriş Yap',
+                style: AppTheme.bodyMedium.copyWith(
+                  color: AppTheme.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
