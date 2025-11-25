@@ -23,18 +23,18 @@ Widget buildImage(String? imagePath, {
       height: height,
       errorBuilder: (context, error, stackTrace) {
         return errorWidget ?? Container(
-          color: AppTheme.inputFieldGray,
+          color: AppTheme.inputBackground,
           child: const Icon(
             Icons.image,
             size: 60,
-            color: AppTheme.iconGray,
+            color: AppTheme.iconSecondary,
           ),
         );
       },
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
         return Container(
-          color: AppTheme.inputFieldGray,
+          color: AppTheme.inputBackground,
           child: Center(
             child: CircularProgressIndicator(
               value: loadingProgress.expectedTotalBytes != null
@@ -56,11 +56,11 @@ Widget buildImage(String? imagePath, {
     height: height,
     errorBuilder: (context, error, stackTrace) {
       return errorWidget ?? Container(
-        color: AppTheme.inputFieldGray,
+        color: AppTheme.inputBackground,
         child: const Icon(
           Icons.image,
           size: 60,
-          color: AppTheme.iconGray,
+          color: AppTheme.iconSecondary,
         ),
       );
     },

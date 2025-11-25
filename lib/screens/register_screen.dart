@@ -56,10 +56,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (response.user != null) {
+        // Kayıt başarılı olduğunda, kullanıcının otomatik giriş yapıp yapmadığını kontrol et
+        // Eğer email confirmation gerekliyse, otomatik giriş yapmayabilir
+        if (!AuthService.isAuthenticated) {
+          // Otomatik giriş yapılmamışsa, email ve şifre ile giriş yap
+          try {
+            await AuthService.signInWithEmail(
+              email: _emailController.text.trim(),
+              password: _passwordController.text,
+            );
+          } catch (e) {
+            // Giriş yapılamazsa, kullanıcıya bilgi ver
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Kayıt başarılı! Lütfen email adresinizi doğrulayın ve giriş yapın.'),
+                  backgroundColor: AppTheme.successGreen,
+                ),
+              );
+            }
+            // Giriş yapılamadığı için callback'i çağırma, sadece geri dön
+            if (mounted) {
+              Navigator.pop(context, false);
+            }
+            return;
+          }
+        }
+        
+        // Kullanıcı giriş yapmış durumda
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Kayıt başarılı! Giriş yapabilirsiniz.'),
+              content: Text('Kayıt başarılı! Hoş geldiniz.'),
               backgroundColor: AppTheme.successGreen,
             ),
           );

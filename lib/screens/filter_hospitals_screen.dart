@@ -135,10 +135,10 @@ class _FilterHospitalsScreenState extends State<FilterHospitalsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: AppTheme.backgroundPrimary,
       appBar: AppBar(
         title: const Text('Hastane Filtrele'),
-        backgroundColor: AppTheme.mediumTurquoise,
+        backgroundColor: AppTheme.accentTeal,
         foregroundColor: AppTheme.darkText,
         elevation: 0,
       ),
@@ -153,7 +153,7 @@ class _FilterHospitalsScreenState extends State<FilterHospitalsScreen> {
                     color: AppTheme.white,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 2),
                       ),
@@ -171,7 +171,7 @@ class _FilterHospitalsScreenState extends State<FilterHospitalsScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           filled: true,
-                          fillColor: AppTheme.inputFieldGray,
+                          fillColor: AppTheme.inputBackground,
                         ),
                         items: [
                           const DropdownMenuItem<String>(
@@ -197,7 +197,7 @@ class _FilterHospitalsScreenState extends State<FilterHospitalsScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             filled: true,
-                            fillColor: AppTheme.inputFieldGray,
+                            fillColor: AppTheme.inputBackground,
                           ),
                           items: [
                             const DropdownMenuItem<String>(
@@ -222,20 +222,20 @@ class _FilterHospitalsScreenState extends State<FilterHospitalsScreen> {
                       horizontal: 20,
                       vertical: 12,
                     ),
-                    color: AppTheme.lightTurquoise,
+                    color: AppTheme.backgroundSecondary,
                     child: Row(
                       children: [
                         Icon(
                           Icons.local_hospital,
                           size: 18,
-                          color: AppTheme.tealBlue,
+                          color: AppTheme.primaryBlue,
                         ),
                         const SizedBox(width: 8),
                         Text(
                           '${_filteredHospitals.length} hastane bulundu',
                           style: AppTheme.bodyMedium.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: AppTheme.tealBlue,
+                            color: AppTheme.primaryBlue,
                           ),
                         ),
                       ],
@@ -253,7 +253,7 @@ class _FilterHospitalsScreenState extends State<FilterHospitalsScreen> {
                                 Icon(
                                   Icons.search_off,
                                   size: 64,
-                                  color: AppTheme.iconGray,
+                                  color: AppTheme.iconSecondary,
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
@@ -261,7 +261,7 @@ class _FilterHospitalsScreenState extends State<FilterHospitalsScreen> {
                                       ? 'Lütfen il veya ilçe seçiniz'
                                       : 'Seçilen kriterlere uygun hastane bulunamadı',
                                   style: AppTheme.bodyMedium.copyWith(
-                                    color: AppTheme.grayText,
+                                    color: AppTheme.lightText,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -303,7 +303,7 @@ class _FilterHospitalsScreenState extends State<FilterHospitalsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -332,7 +332,7 @@ class _FilterHospitalsScreenState extends State<FilterHospitalsScreen> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: AppTheme.lightTurquoise,
+                    color: AppTheme.backgroundSecondary,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: hospital.image != null
@@ -344,14 +344,14 @@ class _FilterHospitalsScreenState extends State<FilterHospitalsScreen> {
                             errorWidget: Icon(
                               Icons.local_hospital,
                               size: 40,
-                              color: AppTheme.tealBlue,
+                              color: AppTheme.primaryBlue,
                             ),
                           ),
                         )
                       : Icon(
                           Icons.local_hospital,
                           size: 40,
-                          color: AppTheme.tealBlue,
+                          color: AppTheme.primaryBlue,
                         ),
                 ),
                 const SizedBox(width: 16),
@@ -374,14 +374,14 @@ class _FilterHospitalsScreenState extends State<FilterHospitalsScreen> {
                           Icon(
                             Icons.location_on,
                             size: 14,
-                            color: AppTheme.iconGray,
+                            color: AppTheme.iconSecondary,
                           ),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
                               hospital.address,
                               style: AppTheme.bodySmall.copyWith(
-                                color: AppTheme.grayText,
+                                color: AppTheme.lightText,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -395,7 +395,7 @@ class _FilterHospitalsScreenState extends State<FilterHospitalsScreen> {
                 Icon(
                   Icons.arrow_forward_ios,
                   size: 16,
-                  color: AppTheme.iconGray,
+                  color: AppTheme.iconSecondary,
                 ),
               ],
             ),

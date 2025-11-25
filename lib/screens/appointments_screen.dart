@@ -4,6 +4,7 @@ import '../models/appointment.dart';
 import '../models/doctor.dart';
 import '../models/hospital.dart';
 import '../models/service.dart';
+import '../models/rating.dart';
 import '../services/json_service.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
@@ -555,6 +556,33 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                 ),
               ),
             ],
+            // Yorum (Sadece geçmiş randevularda)
+            if (appointment.status == 'completed' || appointment.status == 'cancelled') ...[
+              const SizedBox(height: 16),
+              Divider(color: AppTheme.dividerLight),
+              const SizedBox(height: 8),
+              // Yorum ekle/düzenle butonu
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _showReviewDialog(appointment),
+                  icon: Icon(Icons.rate_review, size: 18, color: AppTheme.tealBlue),
+                  label: Text(
+                    'Yorum Ekle / Düzenle',
+                    style: AppTheme.bodyMedium.copyWith(
+                      color: AppTheme.tealBlue,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: AppTheme.tealBlue),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -592,6 +620,212 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _showReviewDialog(Appointment appointment) async {
+    // Mevcut yorumu reviews tablosundan çek
+    String? existingReview;
+    Rating? existingRating;
+    try {
+      final reviewResponse = await JsonService.getReviewByAppointmentId(appointment.id);
+      existingReview = reviewResponse?.comment;
+      
+      final ratingResponse = await JsonService.getRatingByAppointmentId(appointment.id);
+      existingRating = ratingResponse;
+    } catch (e) {
+      print('Yorum/Puanlama çekme hatası: $e');
+    }
+    
+    final reviewController = TextEditingController(text: existingReview ?? '');
+    int hospitalRating = existingRating?.hospitalRating ?? 0;
+    int? doctorRating = existingRating?.doctorRating;
+    
+    // Hastane ve doktor bilgilerini al
+    final hospital = _getHospital(appointment.hospitalId);
+    final doctor = _getDoctor(appointment.doctorId);
+    
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            title: Text(existingReview != null ? 'Yorumu Düzenle' : 'Yorum Ekle', style: AppTheme.headingSmall),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Hastane Puanlama
+                  if (hospital != null) ...[
+                    Text('Hastane Puanı', style: AppTheme.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: List.generate(5, (index) {
+                        return GestureDetector(
+                          onTap: () {
+                            setDialogState(() {
+                              hospitalRating = index + 1;
+                            });
+                          },
+                          child: Icon(
+                            index < hospitalRating ? Icons.star : Icons.star_border,
+                            color: index < hospitalRating ? Colors.amber : AppTheme.iconGray,
+                            size: 32,
+                          ),
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  // Doktor Puanlama
+                  if (doctor != null) ...[
+                    Text('Doktor Puanı', style: AppTheme.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: List.generate(5, (index) {
+                        return GestureDetector(
+                          onTap: () {
+                            setDialogState(() {
+                              doctorRating = index + 1;
+                            });
+                          },
+                          child: Icon(
+                            index < (doctorRating ?? 0) ? Icons.star : Icons.star_border,
+                            color: index < (doctorRating ?? 0) ? Colors.amber : AppTheme.iconGray,
+                            size: 32,
+                          ),
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  // Yorum
+                  Text('Yorum', style: AppTheme.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: reviewController,
+                    maxLines: 5,
+                    decoration: InputDecoration(
+                      hintText: 'Randevunuz hakkında yorumunuzu yazın...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      filled: true,
+                      fillColor: AppTheme.inputFieldGray,
+                    ),
+                    style: AppTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('İptal', style: AppTheme.bodyMedium.copyWith(color: AppTheme.grayText)),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  final review = reviewController.text.trim();
+                  await _updateAppointmentReviewAndRating(
+                    appointment,
+                    review,
+                    hospitalRating,
+                    doctorRating,
+                  );
+                  if (mounted) {
+                    Navigator.pop(context);
+                    _loadData(); // Listeyi yenile
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.tealBlue,
+                  foregroundColor: AppTheme.white,
+                ),
+                child: Text('Kaydet', style: AppTheme.bodyMedium.copyWith(color: AppTheme.white)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _updateAppointmentReview(String appointmentId, String review) async {
+    try {
+      await JsonService.updateAppointmentReview(appointmentId, review);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(review.isEmpty ? 'Yorum silindi' : 'Yorum kaydedildi'),
+            backgroundColor: AppTheme.successGreen,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Yorum kaydedilirken bir hata oluştu'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _updateAppointmentReviewAndRating(
+    Appointment appointment,
+    String review,
+    int hospitalRating,
+    int? doctorRating,
+  ) async {
+    try {
+      final userId = AuthService.currentUserId;
+      if (userId == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Kullanıcı bilgisi alınamadı'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Yorumu kaydet
+      await JsonService.updateAppointmentReview(appointment.id, review);
+
+      // Puanlamayı kaydet (hastane puanı zorunlu, doktor puanı opsiyonel)
+      if (hospitalRating > 0) {
+        await JsonService.updateOrCreateRating(
+          userId: userId,
+          hospitalId: appointment.hospitalId,
+          doctorId: appointment.doctorId,
+          appointmentId: appointment.id,
+          hospitalRating: hospitalRating,
+          doctorRating: doctorRating,
+        );
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Yorum ve puanlama kaydedildi'),
+            backgroundColor: AppTheme.successGreen,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Yorum ve puanlama kaydedilirken bir hata oluştu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   String _formatDate(String date) {
